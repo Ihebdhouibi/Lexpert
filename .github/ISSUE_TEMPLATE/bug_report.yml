@@ -1,0 +1,47 @@
+name: Bug report
+description: Report a defect.
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: A clear description of the bug and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Commands, inputs, and config needed to reproduce.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - frontend
+        - backend
+        - escrow ledger
+        - KYC-Pro verification
+        - scheduling
+        - consultation / video
+        - back-office
+        - both / not sure
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, browser, Node/Python version, and which services were running.
+    validations:
+      required: false
+  - type: checkboxes
+    id: data-hygiene
+    attributes:
+      label: Data hygiene
+      options:
+        - label: This report contains no real personal data, licence numbers, or consultation content.
+          required: true

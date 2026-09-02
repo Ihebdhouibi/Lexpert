@@ -1,0 +1,10 @@
+# Normalise line endings: LF in the repository, on every platform.
+# The pre-commit mixed-line-ending hook enforces LF, so without this the owner works on
+# Windows and every file arrives CRLF and gets rewritten on commit.
+* text=auto eol=lf
+
+# Binary
+*.png binary
+*.jpg binary
+*.pdf binary
+*.ico binary
