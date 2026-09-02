@@ -1,0 +1,49 @@
+name: Feature request
+description: Propose a unit of work (milestone task or enhancement).
+labels: [enhancement]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What should exist and why. One paragraph.
+    validations:
+      required: true
+  - type: textarea
+    id: requirements
+    attributes:
+      label: Requirements
+      description: The specific, numbered things that must be built. Be concrete.
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation / test checks
+      description: How this will be proven to work. Name the tests and the commands.
+    validations:
+      required: true
+  - type: textarea
+    id: deliverables
+    attributes:
+      label: Deliverables
+      description: The files, endpoints, screens or docs this issue is expected to produce.
+    validations:
+      required: true
+  - type: input
+    id: depends-on
+    attributes:
+      label: Depends on
+      description: Other issues this depends on (optional).
+    validations:
+      required: false
+  - type: dropdown
+    id: size
+    attributes:
+      label: Size
+      options:
+        - "S (half a day or less)"
+        - "M (1-2 days)"
+        - "L (3+ days)"
+    validations:
+      required: true
