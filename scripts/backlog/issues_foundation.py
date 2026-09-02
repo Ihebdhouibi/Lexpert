@@ -221,6 +221,10 @@ ISSUES: list[dict[str, object]] = [
             "`gh api -X PUT \"repos/:owner/:repo/rulesets/<id>\" --input .github/ruleset.json`.",
             "Delete `.github/ruleset-no-checks.json` in the same PR; it exists only to bridge "
             "the gap before CI is live.",
+            "Wire `python scripts/check_ruleset_contexts.py` into the `lint-api` job. It already "
+            "exists and passes; it fails the build if the ruleset's required contexts and the "
+            "CI job names ever diverge, which is the failure mode that silently blocks every "
+            "merge.",
         ],
         "validation": [
             "`gh auth status | grep -i \"token scopes\"` includes `workflow`.",
@@ -236,6 +240,7 @@ ISSUES: list[dict[str, object]] = [
             "`.github/workflows/ci.yml` in its final location.",
             "`.github/workflows-staged/` removed.",
             "`.github/ruleset-no-checks.json` removed.",
+            "`scripts/check_ruleset_contexts.py` running as a step in the `lint-api` job.",
             "The ruleset updated on the repository (an API action, not a file change).",
         ],
         "notes": (

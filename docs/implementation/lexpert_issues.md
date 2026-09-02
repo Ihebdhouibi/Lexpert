@@ -73,7 +73,7 @@ Good first issues: `FND-07`, `ESC-05`.
 
 - **Labels:** `ci` `infra` - **Size:** S - **Depends on:** `FND-01` - **Branch:** `chore/fnd-04-activate-ci`
 - **Goal:** Move the CI workflow from its staging directory into `.github/workflows/` and, once it has reported all four check contexts on `develop`, add those contexts as required status checks on the branch ruleset. Until this lands, CI does not run and the only merge gate is code-owner review.
-- **Requirements:** 6 items - **Validation checks:** 5 items - **Deliverables:** 4 items - full text in [`.github/issue-bodies/fnd-04.md`](../../.github/issue-bodies/fnd-04.md)
+- **Requirements:** 7 items - **Validation checks:** 5 items - **Deliverables:** 5 items - full text in [`.github/issue-bodies/fnd-04.md`](../../.github/issue-bodies/fnd-04.md)
 
 ### FND-05 — API application skeleton with module boundaries and error envelope
 

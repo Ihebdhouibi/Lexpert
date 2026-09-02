@@ -17,6 +17,7 @@ Move the CI workflow from its staging directory into `.github/workflows/` and, o
 4. Let CI run once on `develop` so all four contexts report: `lint-api`, `test-api`, `lint-web`, `test-web`.
 5. Only then apply the full ruleset, which adds the required-status-checks rule: `gh api -X PUT "repos/:owner/:repo/rulesets/<id>" --input .github/ruleset.json`.
 6. Delete `.github/ruleset-no-checks.json` in the same PR; it exists only to bridge the gap before CI is live.
+7. Wire `python scripts/check_ruleset_contexts.py` into the `lint-api` job. It already exists and passes; it fails the build if the ruleset's required contexts and the CI job names ever diverge, which is the failure mode that silently blocks every merge.
 
 ## Validation / test checks
 
@@ -33,6 +34,7 @@ Every item below must be satisfied, and the pull request must say how.
 - `.github/workflows/ci.yml` in its final location.
 - `.github/workflows-staged/` removed.
 - `.github/ruleset-no-checks.json` removed.
+- `scripts/check_ruleset_contexts.py` running as a step in the `lint-api` job.
 - The ruleset updated on the repository (an API action, not a file change).
 
 ## Notes
