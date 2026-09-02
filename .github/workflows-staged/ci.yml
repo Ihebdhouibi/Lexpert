@@ -7,6 +7,40 @@ on:
     branches: [develop, stable-testing, main]
 
 jobs:
+  repo-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Hook self-tests
+        run: python scripts/hooks/test_hooks.py
+      - name: Ruleset and CI job names agree
+        run: python scripts/check_ruleset_contexts.py
+      - name: Backlog artifacts are current
+        run: python scripts/hooks/check_backlog_current.py
+      - name: Install pre-commit
+        run: pip install pre-commit
+      - name: Run pre-commit
+        env:
+          # no-commit-to-branch: CI legitimately checks out develop and main.
+          # The toolchain hooks are skipped here because lint-api and lint-web already own
+          # them, with the dependencies installed. This job owns repository hygiene only.
+          SKIP: no-commit-to-branch,mypy-api,eslint-web,prettier-web,typecheck-web
+        run: pre-commit run --all-files --show-diff-on-failure
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # gitleaks scans history, not just the tip
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   lint-api:
     runs-on: ubuntu-latest
     defaults:
