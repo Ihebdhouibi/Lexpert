@@ -17,8 +17,11 @@ A working multi-vertical tele-consulting marketplace for Tunisia, in French, in 
   submits a verification file against **their own regulator**, and becomes discoverable only after
   a human admin approves it.
 - A client searches for a professional, picks a bookable slot, sees a transparent total
-  (hourly rate x duration + platform commission), and confirms.
-- Confirming the booking moves money into an **escrow hold** — simulated in code, see section 2.
+  (hourly rate x duration + platform commission), and **requests** the consultation.
+- Requesting moves money into an **escrow hold** — simulated in code, see section 2 — and the
+  slot is held while the professional decides.
+- The **professional accepts or declines**. Accepting confirms the consultation. Declining, or
+  not answering before a deadline, refunds the client in full and frees the slot.
 - Both parties join a **video consultation** at the appointed time.
 - One hour after the session ends, if nobody raised a dispute, the funds are **released to the
   professional** automatically. If a dispute was raised, an admin mediates it to a release or a
@@ -27,7 +30,30 @@ A working multi-vertical tele-consulting marketplace for Tunisia, in French, in 
   audit log**.
 
 The MVP exit condition is that whole path working end to end, with CI green and no real funds
-moving.
+moving — and it is not a matter of opinion: `E2E-02` drives the entire journey through a real
+browser, once per vertical, and `docs/technical_docs/mvp_acceptance.md` maps each clause of the
+exit condition to the test that proves it.
+
+### 1.1 Why there is an acceptance step
+
+The feasibility study's state machine (section 5.1) models instant booking: the client pays and
+the consultation exists. That is not what this product is. A professional cannot be committed to
+a time by a stranger without agreeing to it, and a doctor or a lawyer in particular has to be
+able to refuse a consultation that is outside their competence. So the MVP inserts a handshake:
+
+```
+client requests  ->  PENDING_ACCEPTANCE  ->  professional accepts  ->  FUNDS_HELD  ->  ...
+                            |
+                            +-- declines / does not answer / client withdraws
+                                       -> full refund, slot freed
+```
+
+**The escrow hold is authorized when the client requests, not when the professional accepts.**
+That preserves the study's promise that the professional sees funds confirmed before committing
+time, and it avoids a second payment step the client could abandon. The cost is that a client's
+money is held briefly for a consultation that may be declined, which is why every non-acceptance
+path refunds in full and the acceptance window is short. `ESC-10` records this decision and the
+alternative, and it is worth confirming before that issue is implemented rather than after.
 
 ### Explicitly out of MVP scope
 
@@ -161,16 +187,22 @@ overlap once its first issue lands.
 | 3 | Professional verification | `KYC` | Three regulator workflows, document upload, admin review queue | AUT |
 | 4 | Profiles and discovery | `PRO` | Public profiles, search and filtering, profile management | KYC |
 | 5 | Scheduling | `SCH` | Availability rules, slot computation, calendars | PRO |
-| 6 | Booking and escrow | `ESC` | Ledger, state machine, hold window, auto-release, checkout | SCH |
+| 6 | Booking and escrow | `ESC` | Ledger, state machine, request-and-accept handshake, hold window, auto-release, both portal surfaces | SCH |
 | 7 | Consultation sessions | `CON` | Video rooms, session lifecycle, `SESSION_ENDED` into escrow | ESC |
 | 8 | Disputes and back-office | `DSP` | Disputes, mediation, ratings | ESC, CON |
 | 9 | Notifications | `NOT` | Email and SMS, French templates, lifecycle triggers | ESC |
 | 10 | Compliance | `CMP` | Consent records, log redaction, contract tests | KYC, CON |
-| 11 | Beta | `BETA` | Real payment partner, wallets, FX, subscriptions, ops | MVP complete |
+| 11 | End-to-end acceptance | `E2E` | Demo seeding, browser acceptance suite for the whole journey | everything above |
+| 12 | Beta | `BETA` | Real payment partner, wallets, FX, subscriptions, ops | MVP complete |
 
 The **critical path to a demonstrable product** is FND -> AUT -> KYC -> PRO -> SCH -> ESC -> CON.
 Everything on it must land before anything in DSP, NOT or CMP is worth starting, because those
-three decorate a flow that has to exist first.
+three decorate a flow that has to exist first. `E2E` comes last by construction: it tests the
+whole journey, so it needs all of it.
+
+Within `ESC`, note that the journey is only walkable once `ESC-11` (the professional's request
+inbox) and `ESC-12` (the client's consultations list) exist. Until then a request can be created
+by the API but there is no screen to accept it from, and nothing can be demonstrated.
 
 ### The one sequencing trap
 
@@ -188,6 +220,8 @@ the ledger) are the exception — they have no scheduling dependency and can be 
   is reviewed against those three sections, not against intent.
 - The coverage gate starts at **70%** and is ratcheted up in a `chore:` PR once the codebase can
   hold more. A permanently red gate gets disabled instead of respected.
-- The MVP milestone is done when its exit condition is demonstrable in one sitting: register a
-  professional in each vertical, approve all three, book one, consult, watch the auto-release, and
-  dispute another one to a refund.
+- The MVP milestone is done when `E2E-02` passes: register a professional in each vertical,
+  approve all three, request a consultation, accept it, consult, watch the auto-release, and
+  dispute another one to a refund — driven through a real browser, not asserted by hand.
+- `E2E-01` seeds a demo environment in one command, so that walkthrough does not begin with
+  twenty minutes of clicking.

@@ -1,7 +1,7 @@
 **Task id:** `DSP-03`
 **Milestone:** MVP
 **Size:** M (1-2 days)
-**Depends on:** `DSP-02`, `CON-03`
+**Depends on:** `DSP-02`, `CON-03`, `ESC-12`
 **Branch:** `feature/dsp-03-dispute-ui`
 **Labels:** `frontend`, `admin`
 

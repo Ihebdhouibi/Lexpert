@@ -89,7 +89,7 @@ create "ESC-04" "Immutable audit log for escrow transitions" "MVP" "escrow" "com
 create "ESC-05" "Price computation: rate, duration and commission" "MVP" "escrow" "backend" "good-first-issue"
 create "ESC-06" "Auto-release job for the one-hour hold window" "MVP" "escrow" "backend"
 create "ESC-07" "Cancellation and no-show policy engine" "MVP" "escrow" "backend"
-create "ESC-08" "Client checkout with the simulated payment step" "MVP" "frontend" "escrow"
+create "ESC-08" "Client consultation request checkout with the simulated payment step" "MVP" "frontend" "escrow"
 create "ESC-09" "Professional earnings and consultation history views" "MVP" "frontend" "escrow"
 
 # --- CON: Consultation sessions ---
@@ -123,7 +123,16 @@ create "BETA-06" "Observability: structured logging, metrics, tracing and alerti
 create "BETA-07" "Deployment pipeline, environments and secret management" "Beta" "infra" "ci"
 create "BETA-08" "Raise the coverage gate and add load and resilience testing" "Beta" "ci" "test"
 create "BETA-09" "Arabic localization alongside French" "Beta" "frontend"
-create "BETA-10" "Pilot readiness: seeding, support tooling and the KPI dashboard" "Beta" "admin" "docs" "backend"
+create "BETA-10" "Pilot readiness: support tooling and the KPI dashboard" "Beta" "admin" "docs" "backend"
+
+# --- ESC: Booking and simulated escrow ---
+create "ESC-10" "Consultation request, acceptance, decline and expiry" "MVP" "escrow" "backend" "api"
+create "ESC-11" "Professional request inbox and consultation dashboard" "MVP" "frontend" "escrow" "consultation"
+create "ESC-12" "Client consultations list and detail" "MVP" "frontend" "escrow"
+
+# --- E2E: End-to-end acceptance ---
+create "E2E-01" "Demo seeding for a reproducible MVP walkthrough" "MVP" "backend" "test" "infra"
+create "E2E-02" "End-to-end acceptance suite for the MVP journey" "MVP" "test" "ci"
 
 echo ""
 echo "created: $created   skipped: $skipped"

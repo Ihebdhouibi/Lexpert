@@ -25,6 +25,11 @@ quietly changed:
    verification workflow: doctors against the CNOM, lawyers against the Ordre National des
    Avocats de Tunisie, financial experts against the OECT. No professional is discoverable or
    bookable before a human admin has approved their file.
+3. **A consultation is requested, not booked.** The client requests a slot and the escrow hold
+   is authorized at that moment; the professional then accepts or declines. A decline, an
+   expired acceptance window, or a withdrawal before acceptance all refund the client in full
+   and free the slot. A professional is never committed to a time they did not agree to, and no
+   screen may describe a `PENDING_ACCEPTANCE` consultation as confirmed.
 
 - Feasibility, business and architecture study: `docs/Phase1-Feasibility-Business-Architecture.md`
 - Design docs: `docs/technical_docs/`

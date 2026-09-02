@@ -46,8 +46,12 @@ financial experts). No professional is bookable before a human admin approves th
 
 ## Milestones
 
-- **MVP** -- simulated escrow end to end, all three verticals with KYC-Pro, video consultations.
-- **Beta** -- licensed payment partner behind the escrow interface, INPDP audit, deploy pipeline.
+- **MVP** -- the whole journey working end to end: a client registers and searches, requests a
+  consultation from a verified professional, the professional accepts, they consult over video,
+  and the simulated escrow releases the funds an hour later. All three verticals, with KYC-Pro.
+  Proven by a browser-driven acceptance suite, not by hand.
+- **Beta** -- licensed payment partner behind the escrow interface, local payment methods,
+  diaspora flows, INPDP audit, observability and a deploy pipeline.
 
 ## Getting started
 

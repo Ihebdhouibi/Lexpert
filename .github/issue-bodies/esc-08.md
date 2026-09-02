@@ -7,7 +7,7 @@
 
 ## Goal
 
-The screens where a client confirms a booking and the funds are held. In the MVP there is no real payment, and this screen carries the responsibility of saying so unambiguously while still demonstrating the real flow.
+The screens where a client submits a consultation request and the funds are held. The professional has not accepted yet, so the copy must not promise a confirmed consultation. In the MVP there is also no real payment, and this screen carries the responsibility of saying both things unambiguously while still demonstrating the real flow.
 
 ## Requirements
 
@@ -18,7 +18,7 @@ The screens where a client confirms a booking and the funds are held. In the MVP
 5. Explicit consent checkboxes before confirming: the cancellation policy (linking to the ESC-07 copy) and the platform terms. Unchecked means the confirm button stays disabled.
 6. On confirm, call `POST /consultations` and handle every documented outcome: success goes to a confirmation screen; a slot conflict returns to the calendar with a French explanation; a provider decline explains and offers a retry; a network failure is distinguishable from a decline.
 7. Double-submit protection: the confirm button disables on click and the request carries an idempotency-safe path, so a double click cannot create two consultations.
-8. A confirmation screen: what was booked, when, what happens next, and how to join the consultation.
+8. A confirmation screen that is honest about what has happened: the request was sent, the money is held, the professional has until a stated deadline to accept, and the client is refunded in full if they decline or do not answer. It must not say the consultation is confirmed, and it links to the ESC-12 consultations list rather than to a join control that does not work yet.
 
 ## Validation / test checks
 
@@ -27,7 +27,7 @@ Every item below must be satisfied, and the pull request must say how.
 - Component test: the summary renders the API's breakdown verbatim, and no arithmetic is performed client-side (assert against a breakdown whose numbers do not follow the naive formula).
 - Component test: the simulation banner is present and is not visually dismissible before confirming.
 - Component test: confirm is disabled until both consents are checked.
-- Component test: a successful confirm calls the endpoint once and navigates to the confirmation screen.
+- Component test: a successful submit calls the endpoint once and navigates to the request-sent screen, whose copy states the acceptance deadline and the full-refund guarantee and does not claim the consultation is confirmed.
 - Component test: a double click results in exactly one request.
 - Component test: a 409 conflict, a provider decline and a network error each render their own distinct French message.
 - Component test: no input in the flow collects card-like data (assert on the rendered form fields).

@@ -401,9 +401,12 @@ ISSUES: list[dict[str, object]] = [
             "A seedable speciality list per vertical (for example medical specialities, areas of "
             "legal practice, areas of financial and fiscal practice). A short, credible starter "
             "list is enough; it is reference data, not a taxonomy project.",
-            "Enums for the escrow and consultation lifecycle exactly as named in the feasibility "
-            "study section 5.1: `BOOKED`, `FUNDS_HELD`, `IN_SESSION`, `SESSION_ENDED`, "
-            "`HOLD_WINDOW`, `UNDER_REVIEW`, `RELEASED_TO_PRO`, `REFUNDED`, `CANCELLED`.",
+            "Enums for the escrow and consultation lifecycle: the nine states named in feasibility "
+            "study section 5.1 -- `BOOKED`, `FUNDS_HELD`, `IN_SESSION`, `SESSION_ENDED`, "
+            "`HOLD_WINDOW`, `UNDER_REVIEW`, `RELEASED_TO_PRO`, `REFUNDED`, `CANCELLED` -- "
+            "plus the three the request-and-accept handshake adds, which the study does not "
+            "model: `PENDING_ACCEPTANCE`, `DECLINED`, `EXPIRED`. Twelve in total; see ESC-03 "
+            "for the transitions between them.",
             "An enum for verification status: `DRAFT`, `SUBMITTED`, `UNDER_REVIEW`, "
             "`MORE_INFO_REQUESTED`, `APPROVED`, `REJECTED`.",
             "A Tunisian governorate or city list for the location filter used by PRO-02.",
@@ -417,8 +420,9 @@ ISSUES: list[dict[str, object]] = [
         "validation": [
             "Unit test: every enum member has a French label in `fr.ts`, and every label key "
             "corresponds to a real enum member. This test fails if either side drifts.",
-            "Unit test: the status enums contain exactly the nine escrow states named in the "
-            "feasibility study, no more and no fewer.",
+            "Unit test: the consultation status enum contains exactly the twelve states listed "
+            "above, no more and no fewer. This test is what stops a state being invented "
+            "ad hoc later without a transition being defined for it.",
             "Integration test: running the seed migration twice leaves the same row counts.",
             "Integration test: `GET /api/v1/reference` returns all three verticals, each with a "
             "non-empty speciality list and its regulator.",
