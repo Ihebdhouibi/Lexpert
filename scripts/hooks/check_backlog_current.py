@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 GENERATED = [
     Path("docs/implementation/lexpert_issues.md"),
+    Path("docs/implementation/roadmap.md"),
     Path("scripts/create_issues.sh"),
 ]
 GENERATED_DIR = Path(".github/issue-bodies")

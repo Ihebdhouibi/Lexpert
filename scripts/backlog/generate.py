@@ -23,6 +23,8 @@ from issues_flow import ISSUES as ISSUES_FLOW  # noqa: E402
 from issues_foundation import ISSUES as ISSUES_FOUNDATION  # noqa: E402
 from issues_marketplace import ISSUES as ISSUES_MARKETPLACE  # noqa: E402
 from issues_sessions import ISSUES as ISSUES_SESSIONS  # noqa: E402
+from render_roadmap import render as render_roadmap  # noqa: E402
+from roadmap import build as build_roadmap  # noqa: E402
 from workstreams import WORKSTREAMS  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -432,6 +434,15 @@ def main() -> None:
     script = ROOT / "scripts" / "create_issues.sh"
     script.write_text(create_script(), encoding="utf-8", newline="\n")
     print(f"wrote {script.relative_to(ROOT)}")
+
+    # The roadmap is derived from the same data. build_roadmap() also validates that every
+    # MVP workstream is planned into exactly one phase, so a new workstream cannot quietly
+    # go unscheduled.
+    roadmap_path = ROOT / "docs" / "implementation" / "roadmap.md"
+    roadmap_path.write_text(
+        render_roadmap(build_roadmap(ALL_ISSUES)), encoding="utf-8", newline="\n"
+    )
+    print(f"wrote {roadmap_path.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":
