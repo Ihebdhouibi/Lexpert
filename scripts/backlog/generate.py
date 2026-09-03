@@ -23,6 +23,7 @@ from issues_flow import ISSUES as ISSUES_FLOW  # noqa: E402
 from issues_foundation import ISSUES as ISSUES_FOUNDATION  # noqa: E402
 from issues_marketplace import ISSUES as ISSUES_MARKETPLACE  # noqa: E402
 from issues_sessions import ISSUES as ISSUES_SESSIONS  # noqa: E402
+from issues_ux import ISSUES as ISSUES_UX  # noqa: E402
 from render_roadmap import render as render_roadmap  # noqa: E402
 from roadmap import build as build_roadmap  # noqa: E402
 from workstreams import WORKSTREAMS  # noqa: E402
@@ -33,6 +34,7 @@ ALL_ISSUES: list[dict[str, object]] = [
     *ISSUES_MARKETPLACE,
     *ISSUES_SESSIONS,
     *ISSUES_FLOW,
+    *ISSUES_UX,
 ]
 
 SIZE_LEGEND = {
@@ -60,6 +62,8 @@ KNOWN_LABELS = {
     "docs",
     "test",
     "good-first-issue",
+    "design",
+    "ux",
 }
 
 
@@ -170,6 +174,23 @@ def body(issue: dict[str, object]) -> str:
         "",
         numbered(issue["requirements"]),  # type: ignore[arg-type]
         "",
+    ]
+
+    # Optional on any issue, and used by the design issues in particular: concrete paths,
+    # references and the mistakes worth avoiding. A requirement list alone is not actionable
+    # to someone who has not done the task before.
+    if issue.get("recommended"):
+        parts += [
+            "## Recommended approach",
+            "",
+            "Guidance, not requirements -- take a different path if you have a better one, but "
+            "say so on the issue rather than silently.",
+            "",
+            bullets(issue["recommended"]),  # type: ignore[arg-type]
+            "",
+        ]
+
+    parts += [
         "## Validation / test checks",
         "",
         "Every item below must be satisfied, and the pull request must say how.",

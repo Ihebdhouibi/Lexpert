@@ -1,7 +1,7 @@
 **Task id:** `AUT-04`
 **Milestone:** MVP
 **Size:** M (1-2 days)
-**Depends on:** `AUT-02`, `AUT-03`, `FND-06`
+**Depends on:** `AUT-02`, `AUT-03`, `FND-06`, `UX-05`, `UX-07`
 **Branch:** `feature/aut-04-web-auth`
 **Labels:** `frontend`, `auth`
 

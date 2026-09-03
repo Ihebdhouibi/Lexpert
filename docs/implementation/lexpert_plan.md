@@ -164,6 +164,9 @@ the strictest — nothing outside it writes to the ledger.
 | Escrow | Simulator behind `EscrowProvider` | See section 2.1 |
 | Money | Integer millimes, never floats | TND has three decimal places; floats do not do money |
 | Time | UTC in storage, timezone-aware at the edges | Diaspora clients and Tunisian professionals are in different zones |
+| UI components | Radix Primitives + Tailwind, own visual layer | Accessible behaviour without a theme system to fight; bundle size matters on Tunisian mobile networks |
+| Design handoff | Tokens, not screenshots | `design/tokens.json` generates the CSS custom properties, and CI fails if they drift |
+| Text direction | CSS logical properties from day one | Arabic is Beta, but re-laying out sixteen screens later is far more expensive than the discipline now |
 
 ### Non-functional requirements taken seriously in the MVP
 
@@ -182,6 +185,7 @@ overlap once its first issue lands.
 
 | # | Workstream | Prefix | What it delivers | Depends on |
 | --- | --- | --- | --- | --- |
+| 0 | Design system and UX | `UX` | Research, flows, French copy, tokens, components, screens with every state | — (parallel track) |
 | 1 | Foundation and infra | `FND` | Both apps build, database and migrations, CI green, app skeletons | — |
 | 2 | Identity and accounts | `AUT` | Registration, login, roles, guarded routes | FND |
 | 3 | Professional verification | `KYC` | Three regulator workflows, document upload, admin review queue | AUT |
@@ -199,6 +203,13 @@ The **critical path to a demonstrable product** is FND -> AUT -> KYC -> PRO -> S
 Everything on it must land before anything in DSP, NOT or CMP is worth starting, because those
 three decorate a flow that has to exist first. `E2E` comes last by construction: it tests the
 whole journey, so it needs all of it.
+
+`UX` is a **parallel track on the designer's time**, not a phase the engineering waits for. It
+starts on day one alongside `FND-01`, and it stays off the critical path only because it does:
+`AUT-04`, `KYC-05` and `KYC-07` -- the first screens of each portal -- depend on it, so a design
+track that starts late becomes the constraint. The discipline it enforces is simple and worth
+stating plainly: **no screen is implemented before its design exists, with its states.** See
+`docs/design/design_brief.md`.
 
 Within `ESC`, note that the journey is only walkable once `ESC-11` (the professional's request
 inbox) and `ESC-12` (the client's consultations list) exist. Until then a request can be created

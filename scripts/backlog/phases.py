@@ -18,6 +18,24 @@ from __future__ import annotations
 
 PHASES: list[dict[str, object]] = [
     {
+        "name": "Design foundations",
+        "prefixes": ["UX"],
+        "what": (
+            "Runs on the designer's track from day one, in parallel with everything below -- "
+            "it is listed first because the screens depend on it, not because engineering "
+            "waits for it. Research and flows before any pixel, then the French vocabulary, "
+            "then a visual direction expressed as tokens the code consumes, then the component "
+            "library and the screens. Every screen ships with its states, because on this "
+            "product the states are most of the product. Grounding is "
+            "`docs/design/design_brief.md`, written for a designer early in their career."
+        ),
+        "checkpoint": (
+            "Real people have described back, correctly, what happens to their money when they "
+            "request a consultation -- and every client, professional and admin screen exists "
+            "at 375px with every state, built from a token set that passes WCAG 2.2 AA."
+        ),
+    },
+    {
         "name": "Foundation",
         "prefixes": ["FND"],
         "what": (

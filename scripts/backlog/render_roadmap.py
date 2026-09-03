@@ -66,13 +66,22 @@ def render(model: dict[str, object]) -> str:
         "| | |",
         "| --- | --- |",
         f"| MVP issues | {totals['mvp_issues']} |",  # type: ignore[index]
-        f"| MVP effort | {totals['mvp_days']} issue-days |",  # type: ignore[index]
+        f"| Build track | {totals['mvp_build_issues']} issues, "  # type: ignore[index]
+        f"{totals['mvp_build_days']} issue-days |",  # type: ignore[index]
+        f"| Design track | {totals['mvp_design_issues']} issues, "  # type: ignore[index]
+        f"{totals['mvp_design_days']} issue-days |",  # type: ignore[index]
         f"| Critical path | **{crit['days']} issue-days** across {crit['count']} issues |",  # type: ignore[index]
         f"| Beta issues | {totals['beta_issues']} ({totals['beta_days']} issue-days) |",  # type: ignore[index]
         "",
         "**Issue-days are effort, not calendar days** — they exclude review, rework, and the",
         "fact that one person works on one thing at a time. Sizes: S = half a day, M = 1-2",
         "days, L = 3 or more.",
+        "",
+        "**Two tracks run in parallel.** The design track is the designer's work, the build",
+        "track is the implementer's, so the two figures do not add into a delivery date. What",
+        "connects them is the dependency graph: no screen is implemented before its design",
+        "exists, which is why the design track starts on day one rather than when the backend",
+        "is ready.",
         "",
         "**The critical path is the number that matters for \"when could this be done\".** It is",
         "the longest dependency chain, so it is the floor on elapsed time however many people",
@@ -81,19 +90,38 @@ def render(model: dict[str, object]) -> str:
         "",
     ]
 
-    # --- start here
-    first = model["phases"][0]["issues"][0]  # type: ignore[index]
-    out += [
-        "## Start here",
-        "",
-        f"{link(str(first['id']), numbers)} — {first['title']}. No dependencies, and everything "
-        "waits on it.",
-        "",
-        "Then straight down the critical path:",
-        "",
-        "  " + " -> ".join(f"`{i}`" for i in crit["chain"][:6]) + " -> ...",  # type: ignore[index]
-        "",
-    ]
+    # --- start here, per track. Both people start on day one, on different issues.
+    def first_unblocked(design: bool) -> dict[str, object] | None:
+        for phase in model["phases"]:  # type: ignore[union-attr]
+            for issue in phase["issues"]:  # type: ignore[union-attr]
+                if ("design" in issue["labels"]) is design and not issue["depends"]:  # type: ignore[operator]
+                    return issue
+        return None
+
+    build_first = first_unblocked(design=False)
+    design_first = first_unblocked(design=True)
+
+    out += ["## Start here", ""]
+    out.append("Both tracks start on day one, on different issues.")
+    out.append("")
+    if build_first is not None:
+        out += [
+            f"**Build track** — {link(str(build_first['id']), numbers)} "
+            f"{build_first['title']}. No dependencies, and every other engineering issue waits "
+            "on it.",
+            "",
+            "  Then straight down the critical path: "
+            + " -> ".join(f"`{i}`" for i in crit["chain"][:6])  # type: ignore[index]
+            + " -> ...",
+            "",
+        ]
+    if design_first is not None:
+        out += [
+            f"**Design track** — {link(str(design_first['id']), numbers)} "
+            f"{design_first['title']}. Research before pixels; read "
+            "[the design brief](../design/design_brief.md) first.",
+            "",
+        ]
 
     # --- phase table of contents
     out += [

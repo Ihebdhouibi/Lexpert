@@ -17,6 +17,18 @@ WORKSTREAMS: list[dict[str, str]] = [
         ),
     },
     {
+        "prefix": "UX",
+        "title": "Design system and UX foundations",
+        "milestone": "MVP",
+        "summary": (
+            "Runs on the designer's track from day one, in parallel with the engineering. "
+            "Research and flows before any pixel, then the French copy decisions, then a visual "
+            "direction expressed as tokens the code consumes directly, then the component "
+            "library and the screens -- every one of them with its states, because the states "
+            "are most of this product. Grounding for all of it is docs/design/design_brief.md."
+        ),
+    },
+    {
         "prefix": "AUT",
         "title": "Identity and accounts",
         "milestone": "MVP",

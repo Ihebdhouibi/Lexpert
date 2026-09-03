@@ -1,7 +1,7 @@
 **Task id:** `KYC-05`
 **Milestone:** MVP
 **Size:** L (3 days or more)
-**Depends on:** `KYC-04`, `AUT-04`
+**Depends on:** `KYC-04`, `AUT-04`, `UX-08`
 **Branch:** `feature/kyc-05-onboarding-wizard`
 **Labels:** `frontend`, `kyc-pro`
 

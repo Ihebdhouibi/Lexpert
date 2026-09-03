@@ -134,6 +134,18 @@ create "ESC-12" "Client consultations list and detail" "MVP" "frontend" "escrow"
 create "E2E-01" "Demo seeding for a reproducible MVP walkthrough" "MVP" "backend" "test" "infra"
 create "E2E-02" "End-to-end acceptance suite for the MVP journey" "MVP" "test" "ci"
 
+# --- UX: Design system and UX foundations ---
+create "UX-01" "Product grounding, competitor teardowns and user conversations" "MVP" "design" "ux" "docs"
+create "UX-09" "French UX copy guide and terminology glossary" "MVP" "design" "ux" "docs"
+create "UX-02" "Information architecture and user flows for the three portals" "MVP" "design" "ux"
+create "UX-03" "Visual direction and design tokens" "MVP" "design" "ux"
+create "UX-04" "Token pipeline: Figma tokens to CSS custom properties" "MVP" "frontend" "ux" "infra"
+create "UX-05" "Component foundation: Radix primitives, Tailwind and the primitive set" "MVP" "frontend" "ux"
+create "UX-06" "Figma component library, mapped to the code components" "MVP" "design" "ux"
+create "UX-07" "Client journey screens, every state" "MVP" "design" "ux"
+create "UX-08" "Professional and admin portal screens" "MVP" "design" "ux" "admin"
+create "UX-10" "Accessibility standard and design quality gates in CI" "MVP" "frontend" "ux" "ci" "test"
+
 echo ""
 echo "created: $created   skipped: $skipped"
 if [[ "$DRY_RUN" != "--dry-run" ]]; then
