@@ -36,7 +36,7 @@ quietly changed:
 - Implementation plan and issue backlog: `docs/implementation/`
 - Collaboration workflow (branches, PRs, rulesets): `docs/team_workflow_playbook.md`
 
-Stack: React + TypeScript with Vite (`apps/web`); Python 3.12 + FastAPI as a modular monolith
+Stack: React + TypeScript with Vite (`apps/web`); Python 3.11 + FastAPI as a modular monolith
 (`apps/api`, package `lexpert_api`); PostgreSQL. Video consultations run on a hosted WebRTC SDK
 behind a provider adapter.
 

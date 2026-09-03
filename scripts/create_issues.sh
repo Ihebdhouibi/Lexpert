@@ -49,7 +49,7 @@ create() {
 create "FND-01" "Monorepo scaffolding for apps/web and apps/api" "MVP" "infra"
 create "FND-02" "API configuration and secrets handling" "MVP" "infra" "backend"
 create "FND-03" "PostgreSQL, SQLAlchemy and Alembic baseline" "MVP" "database" "infra" "backend"
-create "FND-04" "Activate the CI workflow and add required status checks to the ruleset" "MVP" "ci" "infra"
+create "FND-04" "Make the CI status checks required on the branch ruleset" "MVP" "ci" "infra"
 create "FND-05" "API application skeleton with module boundaries and error envelope" "MVP" "backend" "api" "infra"
 create "FND-06" "Web app shell: routing, layout, French i18n catalogue and API client" "MVP" "frontend" "infra"
 create "FND-07" "Domain reference data: verticals, professions, regulators and statuses" "MVP" "backend" "database" "good-first-issue"

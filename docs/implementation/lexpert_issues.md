@@ -56,7 +56,7 @@ Good first issues: `FND-07`, `ESC-05`.
 
 - **Labels:** `infra` - **Size:** S - **Depends on:** — - **Branch:** `feature/fnd-01-monorepo-scaffolding`
 - **Goal:** Create the two-app monorepo layout every later issue assumes, so that both apps build, lint and run their (empty) test suites from a clean clone. Nothing functional is added here; this issue exists so that no feature PR has to also invent the project structure.
-- **Requirements:** 7 items - **Validation checks:** 5 items - **Deliverables:** 3 items - full text in [`.github/issue-bodies/fnd-01.md`](../../.github/issue-bodies/fnd-01.md)
+- **Requirements:** 8 items - **Validation checks:** 6 items - **Deliverables:** 4 items - full text in [`.github/issue-bodies/fnd-01.md`](../../.github/issue-bodies/fnd-01.md)
 
 ### FND-02 — API configuration and secrets handling
 
@@ -70,11 +70,11 @@ Good first issues: `FND-07`, `ESC-05`.
 - **Goal:** Stand up the persistence layer: a local PostgreSQL via Docker Compose, an async SQLAlchemy session, Alembic migrations, and the test fixtures every later data issue will use. No domain tables are created here beyond the conventions.
 - **Requirements:** 8 items - **Validation checks:** 5 items - **Deliverables:** 5 items - full text in [`.github/issue-bodies/fnd-03.md`](../../.github/issue-bodies/fnd-03.md)
 
-### FND-04 — Activate the CI workflow and add required status checks to the ruleset
+### FND-04 — Make the CI status checks required on the branch ruleset
 
-- **Labels:** `ci` `infra` - **Size:** S - **Depends on:** `FND-01` - **Branch:** `chore/fnd-04-activate-ci`
-- **Goal:** Move the CI workflow from its staging directory into `.github/workflows/` and, once it has reported all four check contexts on `develop`, add those contexts as required status checks on the branch ruleset. Until this lands, CI does not run and the only merge gate is code-owner review.
-- **Requirements:** 7 items - **Validation checks:** 5 items - **Deliverables:** 5 items - full text in [`.github/issue-bodies/fnd-04.md`](../../.github/issue-bodies/fnd-04.md)
+- **Labels:** `ci` `infra` - **Size:** S - **Depends on:** — - **Branch:** `chore/fnd-04-required-checks`
+- **Goal:** Finish turning CI into a merge gate. The workflow is live and running; what remains is adding its six contexts to the branch ruleset as required status checks, so a red build actually blocks a merge instead of merely being visible.
+- **Requirements:** 6 items - **Validation checks:** 5 items - **Deliverables:** 3 items - full text in [`.github/issue-bodies/fnd-04.md`](../../.github/issue-bodies/fnd-04.md)
 
 ### FND-05 — API application skeleton with module boundaries and error envelope
 

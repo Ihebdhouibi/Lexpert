@@ -29,7 +29,7 @@ financial experts). No professional is bookable before a human admin approves th
 | Part | Choice |
 | --- | --- |
 | Web | React + TypeScript, Vite (`apps/web`) |
-| API | Python 3.12 + FastAPI, modular monolith (`apps/api`, package `lexpert_api`) |
+| API | Python 3.11 + FastAPI, modular monolith (`apps/api`, package `lexpert_api`) |
 | Database | PostgreSQL 16 |
 | Video | Hosted WebRTC SDK behind a provider adapter |
 
@@ -55,5 +55,5 @@ financial experts). No professional is bookable before a human admin approves th
 
 ## Getting started
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). In short: Python 3.12, Node 20, PostgreSQL 16, then
+See [CONTRIBUTING.md](CONTRIBUTING.md). In short: Python 3.11, Node 20, PostgreSQL 16, then
 `pre-commit install && pre-commit install --hook-type commit-msg` once per clone.

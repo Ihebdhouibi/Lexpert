@@ -25,8 +25,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 RULESET = ROOT / ".github" / "ruleset.json"
 
-# The workflow lives in `workflows-staged/` until FND-04 activates it. Check whichever exists so
-# this script keeps working across that move rather than needing an edit at the same time.
+# `workflows/` is the live location. `workflows-staged/` was where the workflow was parked
+# before the owner's token had the `workflow` scope; the fallback is kept so the script still
+# works on an older branch or a revert, and costs nothing.
 CI_CANDIDATES = [
     ROOT / ".github" / "workflows" / "ci.yml",
     ROOT / ".github" / "workflows-staged" / "ci.yml",

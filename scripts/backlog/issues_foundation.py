@@ -29,6 +29,11 @@ ISSUES: list[dict[str, object]] = [
             "is pinned in the repository-root `.nvmrc` (already committed, value `20`).",
             "Create `apps/api` as an installable Python package: `pyproject.toml` with the "
             "package under `apps/api/src/lexpert_api/`, plus an `apps/api/tests/` root.",
+            "**Python 3.11**, pinned deliberately -- it is what the rest of the team's stack "
+            "runs. Set `requires-python = \">=3.11,<3.12\"` so an install on the wrong "
+            "interpreter fails immediately rather than at some later import, and commit a "
+            "`.python-version` of `3.11` for pyenv. CI runs 3.11 too, so a local pass means a "
+            "CI pass.",
             "Configure `apps/api/pyproject.toml` exactly as specified in the Deliverables "
             "section below: ruff, mypy strict, pytest and coverage with `fail_under = 70`.",
             "Add one trivial passing test per app so the suites are not empty (`vitest` on a "
@@ -44,6 +49,8 @@ ISSUES: list[dict[str, object]] = [
             "succeed in `apps/web`.",
             "From a clean clone: `cd apps/api && pip install -e \".[dev]\"` succeeds, then "
             "`ruff check .`, `ruff format --check .`, `mypy src` and `pytest` all succeed.",
+            "`python --version` reports 3.11.x, and installing under 3.12 or 3.10 is refused by "
+            "`requires-python`.",
             "`pre-commit run --all-files` passes at the repository root.",
             "`git commit -m \"bad message\"` is rejected by the commit-msg hook; "
             "`git commit -m \"chore: verify hook\"` is accepted.",
@@ -53,25 +60,29 @@ ISSUES: list[dict[str, object]] = [
             "`.prettierrc`, `tsconfig.json`, `vite.config.ts`, one smoke test.",
             "`apps/api/pyproject.toml`, `apps/api/src/lexpert_api/__init__.py`, "
             "`apps/api/tests/test_smoke.py`.",
+            "`.python-version` at the repository root, containing `3.11`.",
             "A short `apps/README.md` stating which app is which and how to run each.",
         ],
         "notes": (
             "The `apps/api/pyproject.toml` configuration is fixed, because CI and the ruleset "
             "depend on it:\n\n"
             "```toml\n"
+            "[project]\n"
+            'requires-python = ">=3.11,<3.12"\n'
+            "\n"
             "[project.optional-dependencies]\n"
             'dev = ["pytest>=8.0", "pytest-cov>=5.0", "ruff>=0.16", "mypy>=1.11", "httpx>=0.27"]\n'
             "\n"
             "[tool.ruff]\n"
             "line-length = 100\n"
-            'target-version = "py312"\n'
+            'target-version = "py311"\n'
             'src = ["src", "tests"]\n'
             "\n"
             "[tool.ruff.lint]\n"
             'select = ["E", "F", "I", "UP", "B", "SIM"]\n'
             "\n"
             "[tool.mypy]\n"
-            'python_version = "3.12"\n'
+            'python_version = "3.11"\n'
             "strict = true\n"
             'files = ["src", "tests"]\n'
             "\n"
@@ -197,60 +208,65 @@ ISSUES: list[dict[str, object]] = [
     },
     {
         "id": "FND-04",
-        "title": "Activate the CI workflow and add required status checks to the ruleset",
+        "title": "Make the CI status checks required on the branch ruleset",
         "milestone": "MVP",
         "labels": ["ci", "infra"],
         "size": "S",
-        "depends": ["FND-01"],
-        "branch": "chore/fnd-04-activate-ci",
+        "depends": [],
+        "branch": "chore/fnd-04-required-checks",
         "goal": (
-            "Move the CI workflow from its staging directory into `.github/workflows/` and, once "
-            "it has reported all four check contexts on `develop`, add those contexts as "
-            "required status checks on the branch ruleset. Until this lands, CI does not run and "
-            "the only merge gate is code-owner review."
+            "Finish turning CI into a merge gate. The workflow is live and running; what remains "
+            "is adding its six contexts to the branch ruleset as required status checks, so a "
+            "red build actually blocks a merge instead of merely being visible."
         ),
         "requirements": [
-            "**This issue is owned by the repository owner, not the implementer.** It needs the "
-            "`workflow` OAuth scope, which only the owner can grant to their own token.",
-            "The owner runs `gh auth refresh -h github.com -s repo,workflow` (a browser flow).",
-            "`git mv .github/workflows-staged/ci.yml .github/workflows/ci.yml`, remove "
-            "`.github/workflows-staged/README.md`, open the PR and merge it.",
-            "Let CI run once on `develop` so all four contexts report: `lint-api`, `test-api`, "
-            "`lint-web`, `test-web`.",
-            "Only then apply the full ruleset, which adds the required-status-checks rule: "
+            "**Owned by the repository owner, not the implementer.** It changes repository "
+            "settings, not code.",
+            "Already done, recorded here so the remaining work is unambiguous: the `workflow` "
+            "OAuth scope was granted; `.github/workflows/ci.yml` is in place and "
+            "`.github/workflows-staged/` is gone; the six jobs are `repo-checks`, `secrets`, "
+            "`lint-api`, `test-api`, `lint-web` and `test-web`.",
+            "Confirm all six contexts have reported on `develop` at least once. A required check "
+            "that has never reported blocks every pull request indefinitely in an unexplained "
+            "\"Expected\" state, so this check is not optional.",
+            "Apply the full ruleset, which carries the required-status-checks rule with "
+            "`strict_required_status_checks_policy: true`: "
             "`gh api -X PUT \"repos/:owner/:repo/rulesets/<id>\" --input .github/ruleset.json`.",
-            "Delete `.github/ruleset-no-checks.json` in the same PR; it exists only to bridge "
-            "the gap before CI is live.",
-            "Wire `python scripts/check_ruleset_contexts.py` into the `lint-api` job. It already "
-            "exists and passes; it fails the build if the ruleset's required contexts and the "
-            "CI job names ever diverge, which is the failure mode that silently blocks every "
-            "merge.",
+            "Delete `.github/ruleset-no-checks.json`; it exists only to bridge the gap before CI "
+            "was live, and leaving it invites someone to apply it by mistake.",
+            "Verify with a throwaway pull request carrying a deliberately failing check that the "
+            "merge is blocked and the GitHub UI names the failing context.",
         ],
         "validation": [
-            "`gh auth status | grep -i \"token scopes\"` includes `workflow`.",
             "`gh api \"repos/:owner/:repo/commits/develop/status\" -q '.statuses[].context'` "
-            "lists all four contexts.",
+            "lists all six contexts.",
             "`gh api \"repos/:owner/:repo/rulesets/<id>\"` shows a `required_status_checks` rule "
-            "with `strict_required_status_checks_policy: true` and the four contexts.",
-            "A pull request with a deliberately failing test **cannot** be merged, and the "
-            "GitHub UI names the failing required check.",
-            "`.github/workflows-staged/` no longer exists.",
+            "with `strict_required_status_checks_policy: true` and exactly those six contexts.",
+            "A pull request with a deliberately failing check **cannot** be merged, and the "
+            "failing context is named in the UI. Test this with the collaborator's account, not "
+            "the owner's -- the owner has the admin bypass, so their own pull request proves "
+            "nothing.",
+            "`python scripts/check_ruleset_contexts.py` passes.",
+            "`.github/ruleset-no-checks.json` no longer exists.",
         ],
         "deliverables": [
-            "`.github/workflows/ci.yml` in its final location.",
-            "`.github/workflows-staged/` removed.",
             "`.github/ruleset-no-checks.json` removed.",
-            "`scripts/check_ruleset_contexts.py` running as a step in the `lint-api` job.",
             "The ruleset updated on the repository (an API action, not a file change).",
+            "The blocked-merge verification evidenced on the pull request.",
         ],
         "notes": (
-            "Two traps here, both from the workflow playbook. First: applying the "
+            "Two traps, both from the workflow playbook. First: applying the "
             "required-status-checks rule **before** CI has reported blocks every pull request "
-            "indefinitely with an unexplained \"Expected\" state. Second: the four contexts are "
-            "matched as literal strings against CI job names, so renaming a job in `ci.yml` "
-            "without updating `.github/ruleset.json` in the same change silently blocks all "
-            "merges. Never add `paths:` filters to `ci.yml` — a skipped job never reports, which "
-            "produces the same permanent block."
+            "indefinitely. Second: contexts are matched as literal strings against job names, so "
+            "renaming a job without updating `.github/ruleset.json` in the same change silently "
+            "blocks all merges -- `scripts/check_ruleset_contexts.py` runs in the `repo-checks` "
+            "job to catch exactly that, and it also rejects a `paths:` filter on "
+            "`pull_request`, since a skipped job never reports and produces the same block.\n\n"
+            "Note that the four app jobs currently detect a missing `apps/` directory and pass "
+            "without doing anything. That is deliberate -- a job-level `if` that evaluates false "
+            "never reports its status, which would block merges under the strict policy. They "
+            "become real checks as FND-01 creates the apps, and FND-01's own validation requires "
+            "them to actually run."
         ),
     },
     {

@@ -155,7 +155,7 @@ the strictest — nothing outside it writes to the ledger.
 
 | Decision | Choice | Why |
 | --- | --- | --- |
-| Backend | Python 3.12 + FastAPI | Owner's stack; async, typed, OpenAPI for free |
+| Backend | Python 3.11 + FastAPI | Matches the rest of the team's stack; async, typed, OpenAPI for free |
 | Frontend | React + TypeScript + Vite | Owner's stack |
 | Database | PostgreSQL 16 | Transactional ledger integrity; row locking for state transitions |
 | Migrations | Alembic | Every schema change reviewable |
