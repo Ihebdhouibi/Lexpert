@@ -42,7 +42,7 @@ Both tracks start on day one, on different issues.
 
   Then straight down the critical path: `FND-01` -> `FND-02` -> `FND-03` -> `FND-05` -> `FND-07` -> `AUT-01` -> ...
 
-**Design track** — `UX-01` Product grounding, competitor teardowns and user conversations. Research before pixels; read [the design brief](../design/design_brief.md) first.
+**Design track** — [`UX-01`](https://github.com/Ihebdhouibi/Lexpert/issues/72) Product grounding, competitor teardowns and user conversations. Research before pixels; read [the design brief](../design/design_brief.md) first.
 
 ## Phases
 
@@ -71,16 +71,16 @@ Runs on the designer's track from day one, in parallel with everything below -- 
 
 | Issue | Deliverable | After | Size |
 | --- | --- | --- | --- |
-| `UX-01` | **Product grounding, competitor teardowns and user conversations.** Understand the product, the market and the three audiences well enough to design for them, and write down what you learned so the rest of the team shares it. | — | M |
-| `UX-02` | **Information architecture and user flows for the three portals.** Map every screen the MVP needs and how someone moves between them, before anything is styled. | `UX-01` | M |
-| `UX-09` | **French UX copy guide and terminology glossary.** Decide the French vocabulary and tone before any screen exists. | `UX-01` | M |
-| `UX-03` | **Visual direction and design tokens.** Decide what Lexpert looks like, and express it as a small set of named tokens the code can consume directly. | `UX-02`, `UX-09` | M |
-| `UX-04` | **Token pipeline: Figma tokens to CSS custom properties.** Turn the committed `design/tokens.json` into CSS custom properties the web app consumes, with a check that they cannot drift apart. | `UX-03`, `FND-01` | S |
-| `UX-06` | **Figma component library, mapped to the code components.** Build the Figma library the screen designs are assembled from, with every state designed rather than left to the implementer's judgement, and named so the mapping to code is obvious. | `UX-03` | M |
-| `UX-05` | **Component foundation: Radix primitives, Tailwind and the primitive set.** Build the component layer every screen issue reuses: Radix Primitives for accessible behaviour, our tokens for appearance, and the primitive set named to match the Figma library. | `UX-04`, `UX-06` | L |
-| `UX-07` | **Client journey screens, every state.** Design every client-facing screen at mobile width, in every state. | `UX-02`, `UX-06` | L |
-| `UX-08` | **Professional and admin portal screens.** Design the two portals for repeat users. | `UX-07` | L |
-| `UX-10` | **Accessibility standard and design quality gates in CI.** Make the accessibility and visual standards mechanical rather than aspirational. | `UX-05` | M |
+| [`UX-01`](https://github.com/Ihebdhouibi/Lexpert/issues/72) | **Product grounding, competitor teardowns and user conversations.** Understand the product, the market and the three audiences well enough to design for them, and write down what you learned so the rest of the team shares it. | — | M |
+| [`UX-02`](https://github.com/Ihebdhouibi/Lexpert/issues/74) | **Information architecture and user flows for the three portals.** Map every screen the MVP needs and how someone moves between them, before anything is styled. | `UX-01` | M |
+| [`UX-09`](https://github.com/Ihebdhouibi/Lexpert/issues/73) | **French UX copy guide and terminology glossary.** Decide the French vocabulary and tone before any screen exists. | `UX-01` | M |
+| [`UX-03`](https://github.com/Ihebdhouibi/Lexpert/issues/75) | **Visual direction and design tokens.** Decide what Lexpert looks like, and express it as a small set of named tokens the code can consume directly. | `UX-02`, `UX-09` | M |
+| [`UX-04`](https://github.com/Ihebdhouibi/Lexpert/issues/76) | **Token pipeline: Figma tokens to CSS custom properties.** Turn the committed `design/tokens.json` into CSS custom properties the web app consumes, with a check that they cannot drift apart. | `UX-03`, `FND-01` | S |
+| [`UX-06`](https://github.com/Ihebdhouibi/Lexpert/issues/78) | **Figma component library, mapped to the code components.** Build the Figma library the screen designs are assembled from, with every state designed rather than left to the implementer's judgement, and named so the mapping to code is obvious. | `UX-03` | M |
+| [`UX-05`](https://github.com/Ihebdhouibi/Lexpert/issues/77) | **Component foundation: Radix primitives, Tailwind and the primitive set.** Build the component layer every screen issue reuses: Radix Primitives for accessible behaviour, our tokens for appearance, and the primitive set named to match the Figma library. | `UX-04`, `UX-06` | L |
+| [`UX-07`](https://github.com/Ihebdhouibi/Lexpert/issues/79) | **Client journey screens, every state.** Design every client-facing screen at mobile width, in every state. | `UX-02`, `UX-06` | L |
+| [`UX-08`](https://github.com/Ihebdhouibi/Lexpert/issues/80) | **Professional and admin portal screens.** Design the two portals for repeat users. | `UX-07` | L |
+| [`UX-10`](https://github.com/Ihebdhouibi/Lexpert/issues/81) | **Accessibility standard and design quality gates in CI.** Make the accessibility and visual standards mechanical rather than aspirational. | `UX-05` | M |
 
 Rows marked **·** are on the critical path.
 
@@ -97,7 +97,7 @@ The scaffolding every later issue assumes: two apps that build, a database with 
 | Issue | Deliverable | After | Size |
 | --- | --- | --- | --- |
 | [`FND-01`](https://github.com/Ihebdhouibi/Lexpert/issues/2) **·** | **Monorepo scaffolding for apps/web and apps/api.** Create the two-app monorepo layout every later issue assumes, so that both apps build, lint and run their (empty) test suites from a clean clone. | — | S |
-| ~~[`FND-04`](https://github.com/Ihebdhouibi/Lexpert/issues/5)~~ **done** | **Make the CI status checks required on the branch ruleset.** Finish turning CI into a merge gate. | — | S |
+| ~~[`FND-04`](https://github.com/Ihebdhouibi/Lexpert/issues/71)~~ **done** | **Make the CI status checks required on the branch ruleset.** Finish turning CI into a merge gate. | — | S |
 | [`FND-02`](https://github.com/Ihebdhouibi/Lexpert/issues/3) **·** | **API configuration and secrets handling.** Give the API a single typed, validated configuration object loaded from the environment, and give the web app the same for its handful of build-time variables. | `FND-01` | S |
 | [`FND-03`](https://github.com/Ihebdhouibi/Lexpert/issues/4) **·** | **PostgreSQL, SQLAlchemy and Alembic baseline.** Stand up the persistence layer: a local PostgreSQL via Docker Compose, an async SQLAlchemy session, Alembic migrations, and the test fixtures every later data issue will use. | `FND-02` | M |
 | [`FND-06`](https://github.com/Ihebdhouibi/Lexpert/issues/7) | **Web app shell: routing, layout, French i18n catalogue and API client.** Create the web app's frame: the three portal route trees, a mobile-first layout, the French translation catalogue that all copy goes through, and one API client that understands the error envelope from FND-05. | `FND-02` | M |

@@ -168,7 +168,7 @@
   "open": true
  },
  "FND-04": {
-  "number": 5,
+  "number": 71,
   "open": false
  },
  "FND-05": {
@@ -249,6 +249,46 @@
  },
  "SCH-04": {
   "number": 27,
+  "open": true
+ },
+ "UX-01": {
+  "number": 72,
+  "open": true
+ },
+ "UX-02": {
+  "number": 74,
+  "open": true
+ },
+ "UX-03": {
+  "number": 75,
+  "open": true
+ },
+ "UX-04": {
+  "number": 76,
+  "open": true
+ },
+ "UX-05": {
+  "number": 77,
+  "open": true
+ },
+ "UX-06": {
+  "number": 78,
+  "open": true
+ },
+ "UX-07": {
+  "number": 79,
+  "open": true
+ },
+ "UX-08": {
+  "number": 80,
+  "open": true
+ },
+ "UX-09": {
+  "number": 73,
+  "open": true
+ },
+ "UX-10": {
+  "number": 81,
   "open": true
  }
 }

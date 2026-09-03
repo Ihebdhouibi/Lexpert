@@ -18,8 +18,12 @@ if ! gh auth status >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "Reading existing issue titles..."
-EXISTING="$(gh issue list --state all --limit 400 --json title -q ".[].title")"
+# Match on the TASK ID, not the title. A retitled backlog entry keeps its id, so
+# matching on the title created a duplicate every time a title changed -- and a
+# closed issue is never retitled by sync_issues.py, which made it certain.
+echo "Reading existing task ids..."
+EXISTING_IDS="$(gh issue list --state all --limit 400 --json title \
+  -q '.[].title | split(" ")[0]')"
 
 created=0
 skipped=0
@@ -27,7 +31,7 @@ skipped=0
 create() {
   local id="$1" title="$2" milestone="$3"; shift 3
   local full="$id $title"
-  if grep -Fxq "$full" <<< "$EXISTING"; then
+  if grep -Fxq "$id" <<< "$EXISTING_IDS"; then
     echo "skip    $full"
     skipped=$((skipped + 1))
     return 0
