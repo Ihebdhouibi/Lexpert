@@ -71,16 +71,42 @@ def main() -> int:
     )
     live = json.loads(raw)
 
-    # Only open issues participate in matching: a closed duplicate is a resolved duplicate,
-    # and treating it as live would make this script report the same conflict forever.
+    # Only open issues participate in matching, for two reasons: a closed duplicate is a
+    # resolved duplicate, and a closed issue is finished work that must not be edited or
+    # reported as missing -- doing so would invite someone to re-create completed work.
     by_id: dict[str, list[dict]] = {}
+    closed_ids: dict[str, int] = {}
     for issue in live:
-        if issue.get("state") != "OPEN":
-            continue
         task_id = issue["title"].split(" ", 1)[0]
-        by_id.setdefault(task_id, []).append(issue)
+        if issue.get("state") == "OPEN":
+            by_id.setdefault(task_id, []).append(issue)
+        else:
+            closed_ids.setdefault(task_id, issue["number"])
+
+    # The roadmap links to issue numbers and marks finished work, neither of which is in the
+    # backlog data. Persist both so `generate.py` needs no network and the pre-commit
+    # staleness hook stays deterministic. Closed issues are included -- a completed issue is
+    # still worth linking to, and a roadmap that shows finished work as pending is worse than
+    # no roadmap.
+    numbers: dict[str, dict[str, object]] = {
+        task_id: {"number": entries[0]["number"], "open": True}
+        for task_id, entries in by_id.items()
+        if len(entries) == 1
+    }
+    for task_id, number in closed_ids.items():
+        numbers.setdefault(task_id, {"number": number, "open": False})
+    numbers = dict(sorted(numbers.items()))
+    numbers_path = ROOT / "scripts" / "backlog" / "issue_numbers.json"
+    numbers_path.write_text(
+        json.dumps(numbers, indent=1, sort_keys=True) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+    print(f"wrote {numbers_path.relative_to(ROOT)} ({len(numbers)} issues)")
+    print("run `python scripts/backlog/generate.py` if any number changed\n")
 
     missing: list[str] = []
+    done: list[str] = []
     duplicates: list[str] = []
     stale: list[str] = []
     updated = 0
@@ -93,11 +119,17 @@ def main() -> int:
 
         matches = by_id.get(task_id, [])
         if not matches:
-            missing.append(task_id)
+            # A closed issue is finished work: never edit it, never report it as missing.
+            # Reporting it would invite someone to re-create work already done.
+            if task_id in closed_ids:
+                done.append(task_id)
+            else:
+                missing.append(task_id)
             continue
         if len(matches) > 1:
-            numbers = ", ".join(f"#{m['number']}" for m in matches)
-            duplicates.append(f"{task_id}: {numbers}")
+            # Not `numbers` -- that name holds the id-to-number map written above.
+            found = ", ".join(f"#{m['number']}" for m in matches)
+            duplicates.append(f"{task_id}: {found}")
             continue
 
         issue = matches[0]
@@ -149,6 +181,9 @@ def main() -> int:
     print()
     verb = "out of date" if args.dry_run else "updated"
     print(f"in sync: {unchanged}   {verb}: {len(stale) if args.dry_run else updated}")
+
+    if done:
+        print(f"closed, left alone: {', '.join(sorted(done))}")
 
     if missing:
         print(f"\nno issue exists yet for: {', '.join(missing)}")

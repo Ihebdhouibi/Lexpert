@@ -1,0 +1,254 @@
+{
+ "AUT-01": {
+  "number": 9,
+  "open": true
+ },
+ "AUT-02": {
+  "number": 10,
+  "open": true
+ },
+ "AUT-03": {
+  "number": 11,
+  "open": true
+ },
+ "AUT-04": {
+  "number": 12,
+  "open": true
+ },
+ "BETA-01": {
+  "number": 50,
+  "open": true
+ },
+ "BETA-02": {
+  "number": 51,
+  "open": true
+ },
+ "BETA-03": {
+  "number": 52,
+  "open": true
+ },
+ "BETA-04": {
+  "number": 53,
+  "open": true
+ },
+ "BETA-05": {
+  "number": 54,
+  "open": true
+ },
+ "BETA-06": {
+  "number": 55,
+  "open": true
+ },
+ "BETA-07": {
+  "number": 56,
+  "open": true
+ },
+ "BETA-08": {
+  "number": 57,
+  "open": true
+ },
+ "BETA-09": {
+  "number": 58,
+  "open": true
+ },
+ "BETA-10": {
+  "number": 59,
+  "open": true
+ },
+ "CMP-01": {
+  "number": 47,
+  "open": true
+ },
+ "CMP-02": {
+  "number": 48,
+  "open": true
+ },
+ "CMP-03": {
+  "number": 49,
+  "open": true
+ },
+ "CON-01": {
+  "number": 37,
+  "open": true
+ },
+ "CON-02": {
+  "number": 38,
+  "open": true
+ },
+ "CON-03": {
+  "number": 39,
+  "open": true
+ },
+ "CON-04": {
+  "number": 40,
+  "open": true
+ },
+ "DSP-01": {
+  "number": 41,
+  "open": true
+ },
+ "DSP-02": {
+  "number": 42,
+  "open": true
+ },
+ "DSP-03": {
+  "number": 43,
+  "open": true
+ },
+ "DSP-04": {
+  "number": 44,
+  "open": true
+ },
+ "E2E-01": {
+  "number": 66,
+  "open": true
+ },
+ "E2E-02": {
+  "number": 67,
+  "open": true
+ },
+ "ESC-01": {
+  "number": 28,
+  "open": true
+ },
+ "ESC-02": {
+  "number": 29,
+  "open": true
+ },
+ "ESC-03": {
+  "number": 30,
+  "open": true
+ },
+ "ESC-04": {
+  "number": 31,
+  "open": true
+ },
+ "ESC-05": {
+  "number": 32,
+  "open": true
+ },
+ "ESC-06": {
+  "number": 33,
+  "open": true
+ },
+ "ESC-07": {
+  "number": 34,
+  "open": true
+ },
+ "ESC-08": {
+  "number": 35,
+  "open": true
+ },
+ "ESC-09": {
+  "number": 36,
+  "open": true
+ },
+ "ESC-10": {
+  "number": 63,
+  "open": true
+ },
+ "ESC-11": {
+  "number": 64,
+  "open": true
+ },
+ "ESC-12": {
+  "number": 65,
+  "open": true
+ },
+ "FND-01": {
+  "number": 2,
+  "open": true
+ },
+ "FND-02": {
+  "number": 3,
+  "open": true
+ },
+ "FND-03": {
+  "number": 4,
+  "open": true
+ },
+ "FND-04": {
+  "number": 5,
+  "open": false
+ },
+ "FND-05": {
+  "number": 6,
+  "open": true
+ },
+ "FND-06": {
+  "number": 7,
+  "open": true
+ },
+ "FND-07": {
+  "number": 8,
+  "open": true
+ },
+ "KYC-01": {
+  "number": 13,
+  "open": true
+ },
+ "KYC-02": {
+  "number": 14,
+  "open": true
+ },
+ "KYC-03": {
+  "number": 15,
+  "open": true
+ },
+ "KYC-04": {
+  "number": 16,
+  "open": true
+ },
+ "KYC-05": {
+  "number": 17,
+  "open": true
+ },
+ "KYC-06": {
+  "number": 18,
+  "open": true
+ },
+ "KYC-07": {
+  "number": 19,
+  "open": true
+ },
+ "NOT-01": {
+  "number": 45,
+  "open": true
+ },
+ "NOT-02": {
+  "number": 46,
+  "open": true
+ },
+ "PRO-01": {
+  "number": 20,
+  "open": true
+ },
+ "PRO-02": {
+  "number": 21,
+  "open": true
+ },
+ "PRO-03": {
+  "number": 22,
+  "open": true
+ },
+ "PRO-04": {
+  "number": 23,
+  "open": true
+ },
+ "SCH-01": {
+  "number": 24,
+  "open": true
+ },
+ "SCH-02": {
+  "number": 25,
+  "open": true
+ },
+ "SCH-03": {
+  "number": 26,
+  "open": true
+ },
+ "SCH-04": {
+  "number": 27,
+  "open": true
+ }
+}
