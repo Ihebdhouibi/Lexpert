@@ -13,14 +13,21 @@
 
 | | |
 | --- | --- |
-| MVP issues | 53 |
-| MVP effort | 95.5 issue-days |
+| MVP issues | 63 |
+| Build track | 56 issues, 101.0 issue-days |
+| Design track | 7 issues, 14.5 issue-days |
 | Critical path | **39.0 issue-days** across 20 issues |
 | Beta issues | 10 (29.0 issue-days) |
 
 **Issue-days are effort, not calendar days** — they exclude review, rework, and the
 fact that one person works on one thing at a time. Sizes: S = half a day, M = 1-2
 days, L = 3 or more.
+
+**Two tracks run in parallel.** The design track is the designer's work, the build
+track is the implementer's, so the two figures do not add into a delivery date. What
+connects them is the dependency graph: no screen is implemented before its design
+exists, which is why the design track starts on day one rather than when the backend
+is ready.
 
 **The critical path is the number that matters for "when could this be done".** It is
 the longest dependency chain, so it is the floor on elapsed time however many people
@@ -29,29 +36,57 @@ the milestone; slippage elsewhere usually does not.
 
 ## Start here
 
-[`FND-01`](https://github.com/Ihebdhouibi/Lexpert/issues/2) — Monorepo scaffolding for apps/web and apps/api. No dependencies, and everything waits on it.
+Both tracks start on day one, on different issues.
 
-Then straight down the critical path:
+**Build track** — [`FND-01`](https://github.com/Ihebdhouibi/Lexpert/issues/2) Monorepo scaffolding for apps/web and apps/api. No dependencies, and every other engineering issue waits on it.
 
-  `FND-01` -> `FND-02` -> `FND-03` -> `FND-05` -> `FND-07` -> `AUT-01` -> ...
+  Then straight down the critical path: `FND-01` -> `FND-02` -> `FND-03` -> `FND-05` -> `FND-07` -> `AUT-01` -> ...
+
+**Design track** — [`UX-01`](https://github.com/Ihebdhouibi/Lexpert/issues/72) Product grounding, competitor teardowns and user conversations. Research before pixels; read [the design brief](../design/design_brief.md) first.
 
 ## Phases
 
 | # | Phase | Issues | Effort | Checkpoint |
 | --- | --- | --- | --- | --- |
-| 1 | [Foundation](#1-foundation) | 7 | 6.5d | From a clean clone, both apps build, lint and test; migrations run up and back down; `/api/v1/health` answers with a live database round-trip |
-| 2 | [Accounts](#2-accounts) | 4 | 6.0d | Someone can register as a client or a professional, verify their phone by SMS code, log in, and be refused from a portal that is not theirs |
-| 3 | [Verification](#3-verification) | 7 | 14.5d | A doctor, a lawyer and an accountant each complete a wizard asking for what *their* regulator wants, and an admin approves or rejects each with a reason |
-| 4 | [Discovery](#4-discovery) | 4 | 8.0d | A client searches by vertical, speciality, city, language and price, finds an approved professional, and sees their rate and the total for each duration |
-| 5 | [Scheduling](#5-scheduling) | 4 | 8.0d | A professional sets weekly hours, blocks a holiday and sets a buffer, then sees the exact slots that produces |
-| 6 | [Money and the handshake](#6-money-and-the-handshake) | 12 | 25.0d | A client requests a slot and the funds are held; the professional accepts, declines or lets it expire; a decline or an expiry refunds in full and frees the slot |
-| 7 | [Consultation](#7-consultation) | 4 | 9.0d | Both parties join a real video consultation, it degrades to audio on a throttled connection, the professional ends it, and an hour later the funds land with them automatically |
-| 8 | [Disputes and alerts](#8-disputes-and-alerts) | 6 | 9.0d | A client disputes within the hour, the auto-release stands down, an admin refunds with a note, both parties are told, and a completed consultation can be rated |
-| 9 | [Compliance and acceptance](#9-compliance-and-acceptance) | 5 | 9.5d | A browser drives the whole journey once per vertical, plus the dispute and all four rejection paths, and `mvp_acceptance.md` maps every clause of the exit condition to a named test |
+| 1 | [Design foundations](#1-design-foundations) | 10 | 20.0d | Real people have described back, correctly, what happens to their money when they request a consultation -- and every client, professional and admin screen exists at 375px with every state, built from a token set that passes WCAG 2.2 AA |
+| 2 | [Foundation](#2-foundation) | 7 | 6.5d | From a clean clone, both apps build, lint and test; migrations run up and back down; `/api/v1/health` answers with a live database round-trip |
+| 3 | [Accounts](#3-accounts) | 4 | 6.0d | Someone can register as a client or a professional, verify their phone by SMS code, log in, and be refused from a portal that is not theirs |
+| 4 | [Verification](#4-verification) | 7 | 14.5d | A doctor, a lawyer and an accountant each complete a wizard asking for what *their* regulator wants, and an admin approves or rejects each with a reason |
+| 5 | [Discovery](#5-discovery) | 4 | 8.0d | A client searches by vertical, speciality, city, language and price, finds an approved professional, and sees their rate and the total for each duration |
+| 6 | [Scheduling](#6-scheduling) | 4 | 8.0d | A professional sets weekly hours, blocks a holiday and sets a buffer, then sees the exact slots that produces |
+| 7 | [Money and the handshake](#7-money-and-the-handshake) | 12 | 25.0d | A client requests a slot and the funds are held; the professional accepts, declines or lets it expire; a decline or an expiry refunds in full and frees the slot |
+| 8 | [Consultation](#8-consultation) | 4 | 9.0d | Both parties join a real video consultation, it degrades to audio on a throttled connection, the professional ends it, and an hour later the funds land with them automatically |
+| 9 | [Disputes and alerts](#9-disputes-and-alerts) | 6 | 9.0d | A client disputes within the hour, the auto-release stands down, an admin refunds with a note, both parties are told, and a completed consultation can be rated |
+| 10 | [Compliance and acceptance](#10-compliance-and-acceptance) | 5 | 9.5d | A browser drives the whole journey once per vertical, plus the dispute and all four rejection paths, and `mvp_acceptance.md` maps every clause of the exit condition to a named test |
 
 ---
 
-## 1. Foundation
+## 1. Design foundations
+
+*10 issues &middot; 20.0 issue-days &middot; `UX`*
+
+Runs on the designer's track from day one, in parallel with everything below -- it is listed first because the screens depend on it, not because engineering waits for it. Research and flows before any pixel, then the French vocabulary, then a visual direction expressed as tokens the code consumes, then the component library and the screens. Every screen ships with its states, because on this product the states are most of the product. Grounding is `docs/design/design_brief.md`, written for a designer early in their career.
+
+> **Checkpoint.** Real people have described back, correctly, what happens to their money when they request a consultation -- and every client, professional and admin screen exists at 375px with every state, built from a token set that passes WCAG 2.2 AA.
+
+| Issue | Deliverable | After | Size |
+| --- | --- | --- | --- |
+| [`UX-01`](https://github.com/Ihebdhouibi/Lexpert/issues/72) | **Product grounding, competitor teardowns and user conversations.** Understand the product, the market and the three audiences well enough to design for them, and write down what you learned so the rest of the team shares it. | — | M |
+| [`UX-02`](https://github.com/Ihebdhouibi/Lexpert/issues/74) | **Information architecture and user flows for the three portals.** Map every screen the MVP needs and how someone moves between them, before anything is styled. | `UX-01` | M |
+| [`UX-09`](https://github.com/Ihebdhouibi/Lexpert/issues/73) | **French UX copy guide and terminology glossary.** Decide the French vocabulary and tone before any screen exists. | `UX-01` | M |
+| [`UX-03`](https://github.com/Ihebdhouibi/Lexpert/issues/75) | **Visual direction and design tokens.** Decide what Lexpert looks like, and express it as a small set of named tokens the code can consume directly. | `UX-02`, `UX-09` | M |
+| [`UX-04`](https://github.com/Ihebdhouibi/Lexpert/issues/76) | **Token pipeline: Figma tokens to CSS custom properties.** Turn the committed `design/tokens.json` into CSS custom properties the web app consumes, with a check that they cannot drift apart. | `UX-03`, `FND-01` | S |
+| [`UX-06`](https://github.com/Ihebdhouibi/Lexpert/issues/78) | **Figma component library, mapped to the code components.** Build the Figma library the screen designs are assembled from, with every state designed rather than left to the implementer's judgement, and named so the mapping to code is obvious. | `UX-03` | M |
+| [`UX-05`](https://github.com/Ihebdhouibi/Lexpert/issues/77) | **Component foundation: Radix primitives, Tailwind and the primitive set.** Build the component layer every screen issue reuses: Radix Primitives for accessible behaviour, our tokens for appearance, and the primitive set named to match the Figma library. | `UX-04`, `UX-06` | L |
+| [`UX-07`](https://github.com/Ihebdhouibi/Lexpert/issues/79) | **Client journey screens, every state.** Design every client-facing screen at mobile width, in every state. | `UX-02`, `UX-06` | L |
+| [`UX-08`](https://github.com/Ihebdhouibi/Lexpert/issues/80) | **Professional and admin portal screens.** Design the two portals for repeat users. | `UX-07` | L |
+| [`UX-10`](https://github.com/Ihebdhouibi/Lexpert/issues/81) | **Accessibility standard and design quality gates in CI.** Make the accessibility and visual standards mechanical rather than aspirational. | `UX-05` | M |
+
+Rows marked **·** are on the critical path.
+
+---
+
+## 2. Foundation
 
 *7 issues &middot; 6.5 issue-days &middot; `FND`*
 
@@ -62,7 +97,7 @@ The scaffolding every later issue assumes: two apps that build, a database with 
 | Issue | Deliverable | After | Size |
 | --- | --- | --- | --- |
 | [`FND-01`](https://github.com/Ihebdhouibi/Lexpert/issues/2) **·** | **Monorepo scaffolding for apps/web and apps/api.** Create the two-app monorepo layout every later issue assumes, so that both apps build, lint and run their (empty) test suites from a clean clone. | — | S |
-| ~~[`FND-04`](https://github.com/Ihebdhouibi/Lexpert/issues/5)~~ **done** | **Make the CI status checks required on the branch ruleset.** Finish turning CI into a merge gate. | — | S |
+| ~~[`FND-04`](https://github.com/Ihebdhouibi/Lexpert/issues/71)~~ **done** | **Make the CI status checks required on the branch ruleset.** Finish turning CI into a merge gate. | — | S |
 | [`FND-02`](https://github.com/Ihebdhouibi/Lexpert/issues/3) **·** | **API configuration and secrets handling.** Give the API a single typed, validated configuration object loaded from the environment, and give the web app the same for its handful of build-time variables. | `FND-01` | S |
 | [`FND-03`](https://github.com/Ihebdhouibi/Lexpert/issues/4) **·** | **PostgreSQL, SQLAlchemy and Alembic baseline.** Stand up the persistence layer: a local PostgreSQL via Docker Compose, an async SQLAlchemy session, Alembic migrations, and the test fixtures every later data issue will use. | `FND-02` | M |
 | [`FND-06`](https://github.com/Ihebdhouibi/Lexpert/issues/7) | **Web app shell: routing, layout, French i18n catalogue and API client.** Create the web app's frame: the three portal route trees, a mobile-first layout, the French translation catalogue that all copy goes through, and one API client that understands the error envelope from FND-05. | `FND-02` | M |
@@ -73,7 +108,7 @@ Rows marked **·** are on the critical path.
 
 ---
 
-## 2. Accounts
+## 3. Accounts
 
 *4 issues &middot; 6.0 issue-days &middot; `AUT`*
 
@@ -86,13 +121,13 @@ Registration, login and the authorization mechanism every later endpoint leans o
 | [`AUT-01`](https://github.com/Ihebdhouibi/Lexpert/issues/9) **·** | **User model, registration and JWT login for the three roles.** Let a person create an account as a client or a professional and log in, with admins created out of band. | `FND-05`, `FND-07` | M |
 | [`AUT-02`](https://github.com/Ihebdhouibi/Lexpert/issues/10) | **Email and phone verification, and password reset.** Confirm that a new account's email and phone belong to the person registering, and let someone who has forgotten their password recover it. | `AUT-01` | M |
 | [`AUT-03`](https://github.com/Ihebdhouibi/Lexpert/issues/11) | **Role-based access control and route guards.** Give the API one authorization mechanism, used by every protected endpoint, instead of per-endpoint checks that drift. | `AUT-01` | M |
-| [`AUT-04`](https://github.com/Ihebdhouibi/Lexpert/issues/12) | **Web authentication flows and guarded routes.** The French screens for registering, logging in, verifying a phone and resetting a password, plus the client-side session handling and route guards that keep the three portals apart. | `AUT-02`, `AUT-03`, `FND-06` | M |
+| [`AUT-04`](https://github.com/Ihebdhouibi/Lexpert/issues/12) | **Web authentication flows and guarded routes.** The French screens for registering, logging in, verifying a phone and resetting a password, plus the client-side session handling and route guards that keep the three portals apart. | `AUT-02`, `AUT-03`, `FND-06`, `UX-05`, `UX-07` | M |
 
 Rows marked **·** are on the critical path.
 
 ---
 
-## 3. Verification
+## 4. Verification
 
 *7 issues &middot; 14.5 issue-days &middot; `KYC`*
 
@@ -106,15 +141,15 @@ The compliance control the whole regulated-professions story rests on, and the h
 | [`KYC-02`](https://github.com/Ihebdhouibi/Lexpert/issues/14) | **Document upload with private storage.** Let a professional upload the identity and diploma documents their regulator requires, and let an admin read them — while nobody else can, ever. | `KYC-01` | M |
 | [`KYC-03`](https://github.com/Ihebdhouibi/Lexpert/issues/15) **·** | **Per-vertical verification rule sets for CNOM, the Bar and the OECT.** Encode what each of the three regulators requires, as three declarative rule sets behind one interface, so that adding a fourth vertical later is a new rule set rather than a change to the submission pipeline. | `KYC-01` | L |
 | [`KYC-04`](https://github.com/Ihebdhouibi/Lexpert/issues/16) **·** | **Verification submission and status API.** The endpoints a professional uses to fill in, submit and track their verification file. | `KYC-02`, `KYC-03`, `AUT-03` | M |
-| [`KYC-05`](https://github.com/Ihebdhouibi/Lexpert/issues/17) | **Professional onboarding wizard.** The French multi-step form a professional completes to get verified, with the fields and documents that their chosen vertical actually requires, plus the status page they return to while waiting. | `KYC-04`, `AUT-04` | L |
+| [`KYC-05`](https://github.com/Ihebdhouibi/Lexpert/issues/17) | **Professional onboarding wizard.** The French multi-step form a professional completes to get verified, with the fields and documents that their chosen vertical actually requires, plus the status page they return to while waiting. | `KYC-04`, `AUT-04`, `UX-08` | L |
 | [`KYC-06`](https://github.com/Ihebdhouibi/Lexpert/issues/18) **·** | **Admin verification review queue and decisions.** The API an admin uses to work through submitted verification files and decide them. | `KYC-04`, `AUT-03` | M |
-| [`KYC-07`](https://github.com/Ihebdhouibi/Lexpert/issues/19) | **Admin verification review interface.** The back-office screens an admin uses to review verification files. | `KYC-06`, `AUT-04` | M |
+| [`KYC-07`](https://github.com/Ihebdhouibi/Lexpert/issues/19) | **Admin verification review interface.** The back-office screens an admin uses to review verification files. | `KYC-06`, `AUT-04`, `UX-08` | M |
 
 Rows marked **·** are on the critical path.
 
 ---
 
-## 4. Discovery
+## 5. Discovery
 
 *4 issues &middot; 8.0 issue-days &middot; `PRO`*
 
@@ -133,7 +168,7 @@ Rows marked **·** are on the critical path.
 
 ---
 
-## 5. Scheduling
+## 6. Scheduling
 
 *4 issues &middot; 8.0 issue-days &middot; `SCH`*
 
@@ -152,7 +187,7 @@ Rows marked **·** are on the critical path.
 
 ---
 
-## 6. Money and the handshake
+## 7. Money and the handshake
 
 *12 issues &middot; 25.0 issue-days &middot; `ESC`*
 
@@ -179,7 +214,7 @@ Rows marked **·** are on the critical path.
 
 ---
 
-## 7. Consultation
+## 8. Consultation
 
 *4 issues &middot; 9.0 issue-days &middot; `CON`*
 
@@ -198,7 +233,7 @@ Rows marked **·** are on the critical path.
 
 ---
 
-## 8. Disputes and alerts
+## 9. Disputes and alerts
 
 *6 issues &middot; 9.0 issue-days &middot; `DSP`, `NOT`*
 
@@ -219,7 +254,7 @@ Rows marked **·** are on the critical path.
 
 ---
 
-## 9. Compliance and acceptance
+## 10. Compliance and acceptance
 
 *5 issues &middot; 9.5 issue-days &middot; `CMP`, `E2E`*
 
@@ -241,7 +276,7 @@ Rows marked **·** are on the critical path.
 
 ## The critical path
 
-20 of the 53 MVP issues form the longest dependency chain, at 39.0 issue-days:
+20 of the 63 MVP issues form the longest dependency chain, at 39.0 issue-days:
 
 1. [`FND-01`](https://github.com/Ihebdhouibi/Lexpert/issues/2)
 2. [`FND-02`](https://github.com/Ihebdhouibi/Lexpert/issues/3)
@@ -328,12 +363,12 @@ what a second person could pick up without waiting.
 
 | Wave | Issues |
 | --- | --- |
-| 0 | `FND-01`, `FND-04` |
-| 1 | `FND-02` |
-| 2 | `FND-03`, `FND-06` |
-| 3 | `ESC-02`, `FND-05` |
-| 4 | `ESC-01`, `FND-07` |
-| 5 | `AUT-01` |
+| 0 | `FND-01`, `FND-04`, `UX-01` |
+| 1 | `FND-02`, `UX-02`, `UX-09` |
+| 2 | `FND-03`, `FND-06`, `UX-03` |
+| 3 | `ESC-02`, `FND-05`, `UX-04`, `UX-06` |
+| 4 | `ESC-01`, `FND-07`, `UX-05`, `UX-07` |
+| 5 | `AUT-01`, `UX-08`, `UX-10` |
 | 6 | `AUT-02`, `AUT-03`, `KYC-01` |
 | 7 | `AUT-04`, `KYC-02`, `KYC-03`, `NOT-01` |
 | 8 | `KYC-04` |

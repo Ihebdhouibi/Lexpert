@@ -97,6 +97,10 @@ def build(all_issues: list[dict[str, object]]) -> dict[str, object]:
     def days(ids: list[str]) -> float:
         return round(sum(SIZE_DAYS[str(by_id[i]["size"])] for i in ids), 1)
 
+    def is_design(task_id: str) -> bool:
+        """Designer's track. Effort on it does not compete with the implementer's."""
+        return "design" in by_id[task_id]["labels"]  # type: ignore[operator]
+
     def issue_view(task_id: str) -> dict[str, object]:
         issue = by_id[task_id]
         goal = str(issue["goal"])
@@ -147,6 +151,11 @@ def build(all_issues: list[dict[str, object]]) -> dict[str, object]:
             "beta_issues": len(beta_ids),
             "mvp_days": days(list(mvp)),
             "beta_days": days(beta_ids),
+            # Two people now, so one effort figure would be misleading. Split by track.
+            "mvp_design_issues": sum(1 for k in mvp if is_design(k)),
+            "mvp_design_days": days([k for k in mvp if is_design(k)]),
+            "mvp_build_issues": sum(1 for k in mvp if not is_design(k)),
+            "mvp_build_days": days([k for k in mvp if not is_design(k)]),
             "waves": wave,
         },
         "critical_path": {

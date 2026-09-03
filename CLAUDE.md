@@ -32,7 +32,8 @@ quietly changed:
    screen may describe a `PENDING_ACCEPTANCE` consultation as confirmed.
 
 - Feasibility, business and architecture study: `docs/Phase1-Feasibility-Business-Architecture.md`
-- Design docs: `docs/technical_docs/`
+- Design docs (UI/UX): `docs/design/` — start with `docs/design/design_brief.md`
+- Technical design docs: `docs/technical_docs/`
 - Implementation plan and issue backlog: `docs/implementation/`
 - Collaboration workflow (branches, PRs, rulesets): `docs/team_workflow_playbook.md`
 

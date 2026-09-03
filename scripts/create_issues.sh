@@ -18,8 +18,12 @@ if ! gh auth status >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "Reading existing issue titles..."
-EXISTING="$(gh issue list --state all --limit 400 --json title -q ".[].title")"
+# Match on the TASK ID, not the title. A retitled backlog entry keeps its id, so
+# matching on the title created a duplicate every time a title changed -- and a
+# closed issue is never retitled by sync_issues.py, which made it certain.
+echo "Reading existing task ids..."
+EXISTING_IDS="$(gh issue list --state all --limit 400 --json title \
+  -q '.[].title | split(" ")[0]')"
 
 created=0
 skipped=0
@@ -27,7 +31,7 @@ skipped=0
 create() {
   local id="$1" title="$2" milestone="$3"; shift 3
   local full="$id $title"
-  if grep -Fxq "$full" <<< "$EXISTING"; then
+  if grep -Fxq "$id" <<< "$EXISTING_IDS"; then
     echo "skip    $full"
     skipped=$((skipped + 1))
     return 0
@@ -133,6 +137,18 @@ create "ESC-12" "Client consultations list and detail" "MVP" "frontend" "escrow"
 # --- E2E: End-to-end acceptance ---
 create "E2E-01" "Demo seeding for a reproducible MVP walkthrough" "MVP" "backend" "test" "infra"
 create "E2E-02" "End-to-end acceptance suite for the MVP journey" "MVP" "test" "ci"
+
+# --- UX: Design system and UX foundations ---
+create "UX-01" "Product grounding, competitor teardowns and user conversations" "MVP" "design" "ux" "docs"
+create "UX-09" "French UX copy guide and terminology glossary" "MVP" "design" "ux" "docs"
+create "UX-02" "Information architecture and user flows for the three portals" "MVP" "design" "ux"
+create "UX-03" "Visual direction and design tokens" "MVP" "design" "ux"
+create "UX-04" "Token pipeline: Figma tokens to CSS custom properties" "MVP" "frontend" "ux" "infra"
+create "UX-05" "Component foundation: Radix primitives, Tailwind and the primitive set" "MVP" "frontend" "ux"
+create "UX-06" "Figma component library, mapped to the code components" "MVP" "design" "ux"
+create "UX-07" "Client journey screens, every state" "MVP" "design" "ux"
+create "UX-08" "Professional and admin portal screens" "MVP" "design" "ux" "admin"
+create "UX-10" "Accessibility standard and design quality gates in CI" "MVP" "frontend" "ux" "ci" "test"
 
 echo ""
 echo "created: $created   skipped: $skipped"

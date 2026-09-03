@@ -16,15 +16,16 @@
 
 | Milestone | Issues | S | M | L |
 | --- | --- | --- | --- | --- |
-| MVP | 53 | 6 | 36 | 11 |
+| MVP | 63 | 7 | 42 | 14 |
 | Beta | 10 | 0 | 3 | 7 |
-| **Total** | **63** | **6** | **39** | **18** |
+| **Total** | **73** | **7** | **45** | **21** |
 
 ### Workstreams
 
 | Prefix | Workstream | Milestone | Issues |
 | --- | --- | --- | --- |
 | `FND` | Foundation and infra | MVP | 7 |
+| `UX` | Design system and UX foundations | MVP | 10 |
 | `AUT` | Identity and accounts | MVP | 4 |
 | `KYC` | Professional verification (KYC-Pro) | MVP | 7 |
 | `PRO` | Profiles and discovery | MVP | 4 |
@@ -94,6 +95,70 @@ Good first issues: `FND-07`, `ESC-05`.
 - **Goal:** Define, in one place, the closed vocabularies the rest of the system references: the three verticals, their regulators, the specialities under each, and the consultation and verification status enums. Several later issues each need these; defining them twice guarantees they diverge.
 - **Requirements:** 8 items - **Validation checks:** 4 items - **Deliverables:** 5 items - full text in [`.github/issue-bodies/fnd-07.md`](../../.github/issue-bodies/fnd-07.md)
 
+## UX — Design system and UX foundations
+
+*Milestone: MVP.* Runs on the designer's track from day one, in parallel with the engineering. Research and flows before any pixel, then the French copy decisions, then a visual direction expressed as tokens the code consumes directly, then the component library and the screens -- every one of them with its states, because the states are most of this product. Grounding for all of it is docs/design/design_brief.md.
+
+### UX-01 — Product grounding, competitor teardowns and user conversations
+
+- **Labels:** `design` `ux` `docs` - **Size:** M - **Depends on:** — - **Branch:** `chore/ux-01-grounding`
+- **Goal:** Understand the product, the market and the three audiences well enough to design for them, and write down what you learned so the rest of the team shares it. This comes before any screen, any flow and any colour, because every later decision either follows from this or is a guess.
+- **Requirements:** 6 items - **Validation checks:** 5 items - **Deliverables:** 3 items - full text in [`.github/issue-bodies/ux-01.md`](../../.github/issue-bodies/ux-01.md)
+
+### UX-09 — French UX copy guide and terminology glossary
+
+- **Labels:** `design` `ux` `docs` - **Size:** M - **Depends on:** `UX-01` - **Branch:** `chore/ux-09-copy-guide`
+- **Goal:** Decide the French vocabulary and tone before any screen exists. Fifty-three issues say user-facing strings are French and come from the i18n catalogue, but nothing says what words to use. Deciding late means rewriting every string in the product.
+- **Requirements:** 8 items - **Validation checks:** 5 items - **Deliverables:** 3 items - full text in [`.github/issue-bodies/ux-09.md`](../../.github/issue-bodies/ux-09.md)
+
+### UX-02 — Information architecture and user flows for the three portals
+
+- **Labels:** `design` `ux` - **Size:** M - **Depends on:** `UX-01` - **Branch:** `chore/ux-02-flows`
+- **Goal:** Map every screen the MVP needs and how someone moves between them, before anything is styled. This is what turns fifty-three issues into a picture the whole team shares, and it is where a missing screen is cheap to discover.
+- **Requirements:** 6 items - **Validation checks:** 5 items - **Deliverables:** 3 items - full text in [`.github/issue-bodies/ux-02.md`](../../.github/issue-bodies/ux-02.md)
+
+### UX-03 — Visual direction and design tokens
+
+- **Labels:** `design` `ux` - **Size:** M - **Depends on:** `UX-02`, `UX-09` - **Branch:** `chore/ux-03-visual-direction`
+- **Goal:** Decide what Lexpert looks like, and express it as a small set of named tokens the code can consume directly. This comes after the flows on purpose: a visual direction chosen before you know what screens exist tends to survive as decoration that the screens then fight.
+- **Requirements:** 10 items - **Validation checks:** 7 items - **Deliverables:** 3 items - full text in [`.github/issue-bodies/ux-03.md`](../../.github/issue-bodies/ux-03.md)
+
+### UX-04 — Token pipeline: Figma tokens to CSS custom properties
+
+- **Labels:** `frontend` `ux` `infra` - **Size:** S - **Depends on:** `UX-03`, `FND-01` - **Branch:** `feature/ux-04-token-pipeline`
+- **Goal:** Turn the committed `design/tokens.json` into CSS custom properties the web app consumes, with a check that they cannot drift apart. This is the mechanical join between design and code, and it is what stops the design saying 16px while the code ships 15px.
+- **Requirements:** 6 items - **Validation checks:** 5 items - **Deliverables:** 5 items - full text in [`.github/issue-bodies/ux-04.md`](../../.github/issue-bodies/ux-04.md)
+
+### UX-05 — Component foundation: Radix primitives, Tailwind and the primitive set
+
+- **Labels:** `frontend` `ux` - **Size:** L - **Depends on:** `UX-04`, `UX-06` - **Branch:** `feature/ux-05-component-foundation`
+- **Goal:** Build the component layer every screen issue reuses: Radix Primitives for accessible behaviour, our tokens for appearance, and the primitive set named to match the Figma library. This replaces the small ad-hoc primitive set that FND-06 would otherwise invent.
+- **Requirements:** 8 items - **Validation checks:** 9 items - **Deliverables:** 5 items - full text in [`.github/issue-bodies/ux-05.md`](../../.github/issue-bodies/ux-05.md)
+
+### UX-06 — Figma component library, mapped to the code components
+
+- **Labels:** `design` `ux` - **Size:** M - **Depends on:** `UX-03` - **Branch:** `chore/ux-06-component-library`
+- **Goal:** Build the Figma library the screen designs are assembled from, with every state designed rather than left to the implementer's judgement, and named so the mapping to code is obvious.
+- **Requirements:** 8 items - **Validation checks:** 7 items - **Deliverables:** 3 items - full text in [`.github/issue-bodies/ux-06.md`](../../.github/issue-bodies/ux-06.md)
+
+### UX-07 — Client journey screens, every state
+
+- **Labels:** `design` `ux` - **Size:** L - **Depends on:** `UX-02`, `UX-06` - **Branch:** `chore/ux-07-client-screens`
+- **Goal:** Design every client-facing screen at mobile width, in every state. This is the surface that decides whether a wary first-time user trusts an unfamiliar payment model, so it carries the product's central bet.
+- **Requirements:** 10 items - **Validation checks:** 9 items - **Deliverables:** 3 items - full text in [`.github/issue-bodies/ux-07.md`](../../.github/issue-bodies/ux-07.md)
+
+### UX-08 — Professional and admin portal screens
+
+- **Labels:** `design` `ux` `admin` - **Size:** L - **Depends on:** `UX-07` - **Branch:** `chore/ux-08-pro-admin-screens`
+- **Goal:** Design the two portals for repeat users. Both are operated rather than read, so the craft shifts from reassurance to information density -- and they should not look like the client app.
+- **Requirements:** 9 items - **Validation checks:** 9 items - **Deliverables:** 3 items - full text in [`.github/issue-bodies/ux-08.md`](../../.github/issue-bodies/ux-08.md)
+
+### UX-10 — Accessibility standard and design quality gates in CI
+
+- **Labels:** `frontend` `ux` `ci` `test` - **Size:** M - **Depends on:** `UX-05` - **Branch:** `feature/ux-10-design-qa`
+- **Goal:** Make the accessibility and visual standards mechanical rather than aspirational. Sixteen frontend issues say "accessible"; this is what decides whether that is true, and it catches a regression on the screen nobody reopened.
+- **Requirements:** 8 items - **Validation checks:** 7 items - **Deliverables:** 4 items - full text in [`.github/issue-bodies/ux-10.md`](../../.github/issue-bodies/ux-10.md)
+
 ## AUT — Identity and accounts
 
 *Milestone: MVP.* Registration, login and session handling for the three roles (client, professional, admin), with route guards on both sides.
@@ -118,7 +183,7 @@ Good first issues: `FND-07`, `ESC-05`.
 
 ### AUT-04 — Web authentication flows and guarded routes
 
-- **Labels:** `frontend` `auth` - **Size:** M - **Depends on:** `AUT-02`, `AUT-03`, `FND-06` - **Branch:** `feature/aut-04-web-auth`
+- **Labels:** `frontend` `auth` - **Size:** M - **Depends on:** `AUT-02`, `AUT-03`, `FND-06`, `UX-05`, `UX-07` - **Branch:** `feature/aut-04-web-auth`
 - **Goal:** The French screens for registering, logging in, verifying a phone and resetting a password, plus the client-side session handling and route guards that keep the three portals apart.
 - **Requirements:** 6 items - **Validation checks:** 6 items - **Deliverables:** 4 items - full text in [`.github/issue-bodies/aut-04.md`](../../.github/issue-bodies/aut-04.md)
 
@@ -152,7 +217,7 @@ Good first issues: `FND-07`, `ESC-05`.
 
 ### KYC-05 — Professional onboarding wizard
 
-- **Labels:** `frontend` `kyc-pro` - **Size:** L - **Depends on:** `KYC-04`, `AUT-04` - **Branch:** `feature/kyc-05-onboarding-wizard`
+- **Labels:** `frontend` `kyc-pro` - **Size:** L - **Depends on:** `KYC-04`, `AUT-04`, `UX-08` - **Branch:** `feature/kyc-05-onboarding-wizard`
 - **Goal:** The French multi-step form a professional completes to get verified, with the fields and documents that their chosen vertical actually requires, plus the status page they return to while waiting. This screen is the platform's first impression on the supply side, and the feasibility study's cold-start analysis says supply comes first — so it needs to be genuinely easy.
 - **Requirements:** 9 items - **Validation checks:** 9 items - **Deliverables:** 3 items - full text in [`.github/issue-bodies/kyc-05.md`](../../.github/issue-bodies/kyc-05.md)
 
@@ -164,7 +229,7 @@ Good first issues: `FND-07`, `ESC-05`.
 
 ### KYC-07 — Admin verification review interface
 
-- **Labels:** `frontend` `admin` `kyc-pro` - **Size:** M - **Depends on:** `KYC-06`, `AUT-04` - **Branch:** `feature/kyc-07-admin-review-ui`
+- **Labels:** `frontend` `admin` `kyc-pro` - **Size:** M - **Depends on:** `KYC-06`, `AUT-04`, `UX-08` - **Branch:** `feature/kyc-07-admin-review-ui`
 - **Goal:** The back-office screens an admin uses to review verification files. Review quality depends on how easily the reviewer can see the documents next to the claimed credentials, so the layout is the substance of this issue, not decoration.
 - **Requirements:** 8 items - **Validation checks:** 8 items - **Deliverables:** 4 items - full text in [`.github/issue-bodies/kyc-07.md`](../../.github/issue-bodies/kyc-07.md)
 

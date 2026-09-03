@@ -7,7 +7,13 @@ checklist every change must pass.
 
 Lexpert is a multi-vertical tele-consulting marketplace for Tunisia with an escrow payment model.
 Read `docs/Phase1-Feasibility-Business-Architecture.md` once before your first issue, then
-`docs/implementation/lexpert_plan.md` for what is being built in what order.
+`docs/implementation/lexpert_plan.md` for what is being built in what order and
+`docs/implementation/roadmap.md` for the build order and what each phase demonstrates.
+
+If you are working on the interface, read `docs/design/design_brief.md` too. Two rules from it
+are worth repeating here because they cause the most rework when missed: **every screen ships
+with its states** (loading, empty, error, offline, plus the product-specific ones like pending
+acceptance and hold-window countdown), and **no screen is implemented before its design exists**.
 
 Two MVP constraints to keep in mind while implementing anything:
 

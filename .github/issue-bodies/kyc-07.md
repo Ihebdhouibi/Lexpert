@@ -1,7 +1,7 @@
 **Task id:** `KYC-07`
 **Milestone:** MVP
 **Size:** M (1-2 days)
-**Depends on:** `KYC-06`, `AUT-04`
+**Depends on:** `KYC-06`, `AUT-04`, `UX-08`
 **Branch:** `feature/kyc-07-admin-review-ui`
 **Labels:** `frontend`, `admin`, `kyc-pro`
 

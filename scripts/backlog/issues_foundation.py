@@ -629,7 +629,7 @@ ISSUES: list[dict[str, object]] = [
         "milestone": "MVP",
         "labels": ["frontend", "auth"],
         "size": "M",
-        "depends": ["AUT-02", "AUT-03", "FND-06"],
+        "depends": ["AUT-02", "AUT-03", "FND-06", "UX-05", "UX-07"],
         "branch": "feature/aut-04-web-auth",
         "goal": (
             "The French screens for registering, logging in, verifying a phone and resetting a "
@@ -918,7 +918,7 @@ ISSUES: list[dict[str, object]] = [
         "milestone": "MVP",
         "labels": ["frontend", "kyc-pro"],
         "size": "L",
-        "depends": ["KYC-04", "AUT-04"],
+        "depends": ["KYC-04", "AUT-04", "UX-08"],
         "branch": "feature/kyc-05-onboarding-wizard",
         "goal": (
             "The French multi-step form a professional completes to get verified, with the "
@@ -1036,7 +1036,7 @@ ISSUES: list[dict[str, object]] = [
         "milestone": "MVP",
         "labels": ["frontend", "admin", "kyc-pro"],
         "size": "M",
-        "depends": ["KYC-06", "AUT-04"],
+        "depends": ["KYC-06", "AUT-04", "UX-08"],
         "branch": "feature/kyc-07-admin-review-ui",
         "goal": (
             "The back-office screens an admin uses to review verification files. Review quality "
