@@ -19,6 +19,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
+from issues_flow import ISSUES as ISSUES_FLOW  # noqa: E402
 from issues_foundation import ISSUES as ISSUES_FOUNDATION  # noqa: E402
 from issues_marketplace import ISSUES as ISSUES_MARKETPLACE  # noqa: E402
 from issues_sessions import ISSUES as ISSUES_SESSIONS  # noqa: E402
@@ -29,6 +30,7 @@ ALL_ISSUES: list[dict[str, object]] = [
     *ISSUES_FOUNDATION,
     *ISSUES_MARKETPLACE,
     *ISSUES_SESSIONS,
+    *ISSUES_FLOW,
 ]
 
 SIZE_LEGEND = {
@@ -113,6 +115,25 @@ def check() -> None:
                     f"{issue['id']} ({issue['milestone']}) depends on "
                     f"{dep} ({by_id[dep]['milestone']}), which is later"
                 )
+
+    # A dependency cycle makes the backlog unstartable: every issue in the cycle waits on
+    # another. It is easy to introduce by adding one link and impossible to spot by reading.
+    graph = {str(i["id"]): list(i["depends"]) for i in ALL_ISSUES}  # type: ignore[arg-type]
+    state: dict[str, int] = {}  # 0 = visiting, 1 = done
+
+    def walk(node: str, path: list[str]) -> None:
+        if state.get(node) == 1:
+            return
+        if state.get(node) == 0:
+            cycle = path[path.index(node) :] + [node]
+            raise SystemExit("dependency cycle: " + " -> ".join(cycle))
+        state[node] = 0
+        for dep in graph[node]:
+            walk(dep, [*path, node])
+        state[node] = 1
+
+    for issue_id in graph:
+        walk(issue_id, [])
 
     print(f"checked {len(ALL_ISSUES)} issues, no problems found")
 

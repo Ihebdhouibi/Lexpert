@@ -1,7 +1,7 @@
 **Task id:** `NOT-02`
 **Milestone:** MVP
 **Size:** M (1-2 days)
-**Depends on:** `NOT-01`, `CON-02`, `DSP-02`
+**Depends on:** `NOT-01`, `CON-02`, `DSP-02`, `ESC-10`
 **Branch:** `feature/not-02-lifecycle-notifications`
 **Labels:** `backend`
 
@@ -11,14 +11,16 @@ Trigger the right message at each point in a consultation's life, to the right p
 
 ## Requirements
 
-1. Notifications on: verification approved, rejected or more-info-requested (to the professional); booking confirmed (to both, with the joining details); a reminder 24 hours before and another 30 minutes before (to both, from settings); consultation starting now; funds released (to the professional); refund issued (to the client); dispute raised (to the professional and the admin queue); dispute resolved (to both); cancellation (to the counterparty).
-2. Reminders are scheduled, deduplicated and idempotent: a reminder is sent exactly once per consultation per reminder type, even if the scheduler runs twice or is restarted.
-3. A cancelled or refunded consultation stops its pending reminders. A reminder for a consultation that no longer exists in a joinable state must not be sent.
-4. Reminders carry the recipient's local time, not UTC and not the professional's zone for the client. A diaspora client must read the time they will actually join at.
-5. Channel choice per notification type: time-critical ones (reminders, starting now) prefer SMS; informational ones prefer email; both where it matters.
-6. No notification body contains consultation content, a dispute description, or any health, legal or financial detail. Reminders name the professional and the time, nothing more.
-7. An admin view of the notification log, filterable by consultation and status, so a 'I never got the reminder' report is answerable.
-8. Every trigger point is a call from the existing service layer, not a database trigger or a polling reconciler, except the reminders which are inherently scheduled.
+1. Notifications on: verification approved, rejected or more-info-requested (to the professional); **consultation requested** (to the professional, stating the acceptance deadline); **request accepted** (to the client, with the joining details); **request declined** and **request expired** (to the client, both stating the full refund); **request withdrawn** (to the professional); a reminder 24 hours before and another 30 minutes before (to both, from settings); consultation starting now; funds released (to the professional); refund issued (to the client); dispute raised (to the professional and the admin queue); dispute resolved (to both); cancellation (to the counterparty).
+2. The new-request notification to the professional is the one that gates the whole journey: an unnoticed request expires and the client is refunded for a consultation that could have happened. Send it on both channels and treat SMS as the primary one.
+3. Reminders are scheduled, deduplicated and idempotent: a reminder is sent exactly once per consultation per reminder type, even if the scheduler runs twice or is restarted.
+4. A `PENDING_ACCEPTANCE` consultation gets **no** consultation reminders -- it is not confirmed. Reminders begin only once the professional has accepted.
+5. A cancelled, declined, expired or refunded consultation stops its pending reminders. A reminder for a consultation that no longer exists in a joinable state must not be sent.
+6. Reminders carry the recipient's local time, not UTC and not the professional's zone for the client. A diaspora client must read the time they will actually join at.
+7. Channel choice per notification type: time-critical ones (reminders, starting now) prefer SMS; informational ones prefer email; both where it matters.
+8. No notification body contains consultation content, a dispute description, or any health, legal or financial detail. Reminders name the professional and the time, nothing more.
+9. An admin view of the notification log, filterable by consultation and status, so a 'I never got the reminder' report is answerable.
+10. Every trigger point is a call from the existing service layer, not a database trigger or a polling reconciler, except the reminders which are inherently scheduled.
 
 ## Validation / test checks
 
@@ -26,7 +28,9 @@ Every item below must be satisfied, and the pull request must say how.
 
 - Integration test per notification type: the triggering action results in exactly one send to the correct party on the correct channel, using the recording fake.
 - Integration test: running the reminder scheduler twice sends each reminder once.
-- Integration test: cancelling a consultation prevents its pending reminders.
+- Integration test: cancelling a consultation prevents its pending reminders, and so does a decline and an expiry.
+- Integration test: a `PENDING_ACCEPTANCE` consultation receives no reminders; after acceptance it does.
+- Integration test: each of request-received, accepted, declined, expired and withdrawn sends exactly one notification to the correct party, and the request-received one goes out on SMS.
 - Integration test with a frozen clock: the 24-hour and 30-minute reminders fire at the right times and not before.
 - Integration test: a reminder to a client in `Europe/Paris` renders the time in that zone; the same consultation's reminder to the professional renders in `Africa/Tunis`.
 - Integration test: a released consultation notifies the professional; a refund notifies the client.

@@ -1,0 +1,208 @@
+name: CI
+
+# Job names here are load-bearing: they are the literal strings the branch ruleset requires as
+# status checks. Renaming one without updating .github/ruleset.json in the same change blocks
+# every merge on a check that never reports. scripts/check_ruleset_contexts.py fails the build
+# if they drift, and runs in the repo-checks job below.
+#
+# Do NOT add `paths:` filters. A skipped job never reports its status, so under the ruleset's
+# strict policy the pull request stays blocked forever in an unexplained "Expected" state. That
+# is also why the app jobs below detect a missing app *inside* the job and pass, rather than
+# being conditioned at the job level: a job-level `if` that evaluates false does not report.
+
+on:
+  pull_request:
+    branches: [develop, stable-testing, main]
+  push:
+    branches: [develop, stable-testing, main]
+
+jobs:
+  repo-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - name: Install check dependencies
+        # PyYAML is not present on the runner by default and the drift check needs it to
+        # parse this file. Install everything up front so no check runs before its deps.
+        run: pip install pyyaml pre-commit
+      - name: Hook self-tests
+        run: python scripts/hooks/test_hooks.py
+      - name: Ruleset and CI job names agree
+        run: python scripts/check_ruleset_contexts.py
+      - name: Backlog artifacts are current
+        run: python scripts/hooks/check_backlog_current.py
+      - name: Run pre-commit
+        env:
+          # no-commit-to-branch: CI legitimately checks out develop and main.
+          # The toolchain hooks are skipped here because lint-api and lint-web already own
+          # them, with the dependencies installed. This job owns repository hygiene only.
+          SKIP: no-commit-to-branch,mypy-api,eslint-web,prettier-web,typecheck-web
+        run: pre-commit run --all-files --show-diff-on-failure
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0          # gitleaks scans history, not just the tip
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  lint-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Detect apps/api
+        id: detect
+        run: |
+          if [ -f apps/api/pyproject.toml ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "apps/api does not exist yet (created in FND-01); nothing to lint." \
+              >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/setup-python@v6
+        if: steps.detect.outputs.exists == 'true'
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: apps/api/pyproject.toml
+      - name: Install
+        if: steps.detect.outputs.exists == 'true'
+        working-directory: apps/api
+        run: pip install -e ".[dev]"
+      - name: Ruff lint
+        if: steps.detect.outputs.exists == 'true'
+        working-directory: apps/api
+        run: ruff check .
+      - name: Ruff format
+        if: steps.detect.outputs.exists == 'true'
+        working-directory: apps/api
+        run: ruff format --check .
+      - name: Mypy
+        if: steps.detect.outputs.exists == 'true'
+        working-directory: apps/api
+        run: mypy src
+
+  test-api:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: lexpert
+          POSTGRES_PASSWORD: lexpert
+          POSTGRES_DB: lexpert_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      LEXPERT_DATABASE_URL: postgresql+psycopg://lexpert:lexpert@localhost:5432/lexpert_test
+    steps:
+      - uses: actions/checkout@v5
+      - name: Detect apps/api
+        id: detect
+        run: |
+          if [ -f apps/api/pyproject.toml ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "apps/api does not exist yet (created in FND-01); nothing to test." \
+              >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/setup-python@v6
+        if: steps.detect.outputs.exists == 'true'
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: apps/api/pyproject.toml
+      - name: Install
+        if: steps.detect.outputs.exists == 'true'
+        working-directory: apps/api
+        run: pip install -e ".[dev]"
+      - name: Pytest
+        if: steps.detect.outputs.exists == 'true'
+        working-directory: apps/api
+        run: pytest -q --cov=lexpert_api --cov-report=term-missing
+      - name: Coverage summary
+        if: always() && steps.detect.outputs.exists == 'true'
+        working-directory: apps/api
+        run: |
+          echo "### API coverage" >> "$GITHUB_STEP_SUMMARY"
+          coverage report >> "$GITHUB_STEP_SUMMARY"
+
+  lint-web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Detect apps/web
+        id: detect
+        run: |
+          if [ -f apps/web/package.json ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "apps/web does not exist yet (created in FND-01); nothing to lint." \
+              >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/setup-node@v5
+        if: steps.detect.outputs.exists == 'true'
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - name: Install
+        if: steps.detect.outputs.exists == 'true'
+        working-directory: apps/web
+        run: npm ci
+      - name: ESLint
+        if: steps.detect.outputs.exists == 'true'
+        working-directory: apps/web
+        run: npm run lint
+      - name: Prettier
+        if: steps.detect.outputs.exists == 'true'
+        working-directory: apps/web
+        run: npm run format:check
+      - name: Typecheck
+        if: steps.detect.outputs.exists == 'true'
+        working-directory: apps/web
+        run: npm run typecheck
+
+  test-web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Detect apps/web
+        id: detect
+        run: |
+          if [ -f apps/web/package.json ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "apps/web does not exist yet (created in FND-01); nothing to test." \
+              >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/setup-node@v5
+        if: steps.detect.outputs.exists == 'true'
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - name: Install
+        if: steps.detect.outputs.exists == 'true'
+        working-directory: apps/web
+        run: npm ci
+      - name: Vitest
+        if: steps.detect.outputs.exists == 'true'
+        working-directory: apps/web
+        run: npm test

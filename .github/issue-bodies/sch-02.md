@@ -13,7 +13,7 @@ Turn availability rules, exceptions, buffers and existing bookings into the conc
 
 1. A pure function taking rules, exceptions, existing consultations, constraints, a duration, a date range and a clock, and returning slot instants. No I/O inside it.
 2. Slots are generated at the requested duration, aligned to the rule's start, with the buffer applied after each existing consultation and after each generated slot as appropriate.
-3. A slot is excluded if it overlaps an existing consultation in any non-terminal state, if it falls inside the minimum-notice window, if it is beyond the maximum horizon, or if it extends past the availability window's end.
+3. A slot is excluded if it overlaps an existing consultation in any non-terminal state -- which includes `PENDING_ACCEPTANCE`, so a request awaiting the professional's answer holds its slot -- if it falls inside the minimum-notice window, if it is beyond the maximum horizon, or if it extends past the availability window's end.
 4. `GET /api/v1/professionals/{id}/slots?duration=&from=&to=&tz=` returning slots with both the UTC instant and a rendering in the requested timezone, so the client never has to reimplement the conversion.
 5. Cap the requested range (for example 60 days) and reject a longer one rather than computing it.
 6. The endpoint is public, consistent with PRO-02, but returns slots only for published and approved professionals.
@@ -30,7 +30,7 @@ Every item below must be satisfied, and the pull request must say how.
 - Unit test: minimum notice removes today's imminent slots, with the clock frozen.
 - Unit test: maximum horizon truncates the range.
 - Unit test: a full-day exception yields no slots for that date.
-- Unit test: a cancelled consultation does **not** block its slot; a `FUNDS_HELD` one does.
+- Unit test: a `CANCELLED`, `DECLINED` or `EXPIRED` consultation does **not** block its slot; a `FUNDS_HELD` or `PENDING_ACCEPTANCE` one does.
 - Unit test: slots requested in `Europe/Paris` render at the correct local times across a DST boundary.
 - Integration test: an over-long range is refused; an unpublished professional returns 404.
 - Property test: no returned slot ever overlaps another returned slot or an existing consultation.

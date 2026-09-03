@@ -59,8 +59,9 @@ WORKSTREAMS: list[dict[str, str]] = [
         "milestone": "MVP",
         "summary": (
             "The core of the product: the EscrowProvider interface and its simulator, a "
-            "double-entry ledger, the consultation state machine, the one-hour hold window with "
-            "auto-release, cancellation and no-show policy, and the client checkout."
+            "double-entry ledger, the consultation state machine, the request-and-accept "
+            "handshake, the one-hour hold window with auto-release, cancellation and no-show "
+            "policy, and the two portal surfaces the journey runs through."
         ),
     },
     {
@@ -97,6 +98,17 @@ WORKSTREAMS: list[dict[str, str]] = [
         "summary": (
             "Consent records, a logging guard that keeps consultation content out of logs, and "
             "contract tests over the documented API surface."
+        ),
+    },
+    {
+        "prefix": "E2E",
+        "title": "End-to-end acceptance",
+        "milestone": "MVP",
+        "summary": (
+            "A reproducible demo environment and a browser-driven acceptance suite that "
+            "drives the whole MVP journey -- register, verify, search, request, accept, "
+            "consult, release -- for each of the three verticals. This is what makes the MVP "
+            "exit condition a mechanical question rather than an opinion."
         ),
     },
     {

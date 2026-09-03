@@ -16,9 +16,9 @@
 
 | Milestone | Issues | S | M | L |
 | --- | --- | --- | --- | --- |
-| MVP | 48 | 6 | 34 | 8 |
+| MVP | 53 | 6 | 36 | 11 |
 | Beta | 10 | 0 | 3 | 7 |
-| **Total** | **58** | **6** | **37** | **15** |
+| **Total** | **63** | **6** | **39** | **18** |
 
 ### Workstreams
 
@@ -29,11 +29,12 @@
 | `KYC` | Professional verification (KYC-Pro) | MVP | 7 |
 | `PRO` | Profiles and discovery | MVP | 4 |
 | `SCH` | Scheduling | MVP | 4 |
-| `ESC` | Booking and simulated escrow | MVP | 9 |
+| `ESC` | Booking and simulated escrow | MVP | 12 |
 | `CON` | Consultation sessions | MVP | 4 |
 | `DSP` | Disputes, back-office and ratings | MVP | 4 |
 | `NOT` | Notifications | MVP | 2 |
 | `CMP` | Compliance and hardening | MVP | 3 |
+| `E2E` | End-to-end acceptance | MVP | 2 |
 | `BETA` | Beta | Beta | 10 |
 
 ### Suggested order
@@ -55,7 +56,7 @@ Good first issues: `FND-07`, `ESC-05`.
 
 - **Labels:** `infra` - **Size:** S - **Depends on:** — - **Branch:** `feature/fnd-01-monorepo-scaffolding`
 - **Goal:** Create the two-app monorepo layout every later issue assumes, so that both apps build, lint and run their (empty) test suites from a clean clone. Nothing functional is added here; this issue exists so that no feature PR has to also invent the project structure.
-- **Requirements:** 7 items - **Validation checks:** 5 items - **Deliverables:** 3 items - full text in [`.github/issue-bodies/fnd-01.md`](../../.github/issue-bodies/fnd-01.md)
+- **Requirements:** 8 items - **Validation checks:** 6 items - **Deliverables:** 4 items - full text in [`.github/issue-bodies/fnd-01.md`](../../.github/issue-bodies/fnd-01.md)
 
 ### FND-02 — API configuration and secrets handling
 
@@ -69,11 +70,11 @@ Good first issues: `FND-07`, `ESC-05`.
 - **Goal:** Stand up the persistence layer: a local PostgreSQL via Docker Compose, an async SQLAlchemy session, Alembic migrations, and the test fixtures every later data issue will use. No domain tables are created here beyond the conventions.
 - **Requirements:** 8 items - **Validation checks:** 5 items - **Deliverables:** 5 items - full text in [`.github/issue-bodies/fnd-03.md`](../../.github/issue-bodies/fnd-03.md)
 
-### FND-04 — Activate the CI workflow and add required status checks to the ruleset
+### FND-04 — Make the CI status checks required on the branch ruleset
 
-- **Labels:** `ci` `infra` - **Size:** S - **Depends on:** `FND-01` - **Branch:** `chore/fnd-04-activate-ci`
-- **Goal:** Move the CI workflow from its staging directory into `.github/workflows/` and, once it has reported all four check contexts on `develop`, add those contexts as required status checks on the branch ruleset. Until this lands, CI does not run and the only merge gate is code-owner review.
-- **Requirements:** 6 items - **Validation checks:** 5 items - **Deliverables:** 4 items - full text in [`.github/issue-bodies/fnd-04.md`](../../.github/issue-bodies/fnd-04.md)
+- **Labels:** `ci` `infra` - **Size:** S - **Depends on:** — - **Branch:** `chore/fnd-04-required-checks`
+- **Goal:** Finish turning CI into a merge gate. The workflow is live and running; what remains is adding its six contexts to the branch ruleset as required status checks, so a red build actually blocks a merge instead of merely being visible.
+- **Requirements:** 6 items - **Validation checks:** 5 items - **Deliverables:** 3 items - full text in [`.github/issue-bodies/fnd-04.md`](../../.github/issue-bodies/fnd-04.md)
 
 ### FND-05 — API application skeleton with module boundaries and error envelope
 
@@ -225,7 +226,7 @@ Good first issues: `FND-07`, `ESC-05`.
 
 ## ESC — Booking and simulated escrow
 
-*Milestone: MVP.* The core of the product: the EscrowProvider interface and its simulator, a double-entry ledger, the consultation state machine, the one-hour hold window with auto-release, cancellation and no-show policy, and the client checkout.
+*Milestone: MVP.* The core of the product: the EscrowProvider interface and its simulator, a double-entry ledger, the consultation state machine, the request-and-accept handshake, the one-hour hold window with auto-release, cancellation and no-show policy, and the two portal surfaces the journey runs through.
 
 ### ESC-01 — EscrowProvider interface and the simulator adapter
 
@@ -243,7 +244,7 @@ Good first issues: `FND-07`, `ESC-05`.
 
 - **Labels:** `escrow` `backend` `database` - **Size:** L - **Depends on:** `ESC-01`, `ESC-02`, `SCH-02`, `ESC-05` - **Branch:** `feature/esc-03-booking-state-machine`
 - **Goal:** The heart of the product: creating a consultation, holding the funds, and moving it through the lifecycle from the feasibility study's state machine. Every transition is validated, ledger-posted and audited, and no two clients can take the same slot.
-- **Requirements:** 9 items - **Validation checks:** 12 items - **Deliverables:** 4 items - full text in [`.github/issue-bodies/esc-03.md`](../../.github/issue-bodies/esc-03.md)
+- **Requirements:** 10 items - **Validation checks:** 12 items - **Deliverables:** 4 items - full text in [`.github/issue-bodies/esc-03.md`](../../.github/issue-bodies/esc-03.md)
 
 ### ESC-04 — Immutable audit log for escrow transitions
 
@@ -267,12 +268,12 @@ Good first issues: `FND-07`, `ESC-05`.
 
 - **Labels:** `escrow` `backend` - **Size:** M - **Depends on:** `ESC-03` - **Branch:** `feature/esc-07-cancellation-policy`
 - **Goal:** Encode the rules from feasibility study section 5.2 for what happens when a consultation does not go ahead: who cancelled, how late, who failed to show, and therefore what portion of the held funds is refunded or retained. These are business policy, so they belong in one declarative, testable place rather than scattered across endpoints.
-- **Requirements:** 8 items - **Validation checks:** 11 items - **Deliverables:** 5 items - full text in [`.github/issue-bodies/esc-07.md`](../../.github/issue-bodies/esc-07.md)
+- **Requirements:** 9 items - **Validation checks:** 12 items - **Deliverables:** 5 items - full text in [`.github/issue-bodies/esc-07.md`](../../.github/issue-bodies/esc-07.md)
 
-### ESC-08 — Client checkout with the simulated payment step
+### ESC-08 — Client consultation request checkout with the simulated payment step
 
 - **Labels:** `frontend` `escrow` - **Size:** M - **Depends on:** `ESC-03`, `SCH-04` - **Branch:** `feature/esc-08-checkout-ui`
-- **Goal:** The screens where a client confirms a booking and the funds are held. In the MVP there is no real payment, and this screen carries the responsibility of saying so unambiguously while still demonstrating the real flow.
+- **Goal:** The screens where a client submits a consultation request and the funds are held. The professional has not accepted yet, so the copy must not promise a confirmed consultation. In the MVP there is also no real payment, and this screen carries the responsibility of saying both things unambiguously while still demonstrating the real flow.
 - **Requirements:** 8 items - **Validation checks:** 8 items - **Deliverables:** 3 items - full text in [`.github/issue-bodies/esc-08.md`](../../.github/issue-bodies/esc-08.md)
 
 ### ESC-09 — Professional earnings and consultation history views
@@ -280,6 +281,24 @@ Good first issues: `FND-07`, `ESC-05`.
 - **Labels:** `frontend` `escrow` - **Size:** M - **Depends on:** `ESC-06`, `PRO-03` - **Branch:** `feature/esc-09-earnings-ui`
 - **Goal:** The professional's view of their money: what is held, what has been released, what was refunded, and why. A professional who cannot see where their money is will not trust the escrow, which makes this screen part of the core value proposition rather than a report.
 - **Requirements:** 8 items - **Validation checks:** 9 items - **Deliverables:** 4 items - full text in [`.github/issue-bodies/esc-09.md`](../../.github/issue-bodies/esc-09.md)
+
+### ESC-10 — Consultation request, acceptance, decline and expiry
+
+- **Labels:** `escrow` `backend` `api` - **Size:** L - **Depends on:** `ESC-03`, `SCH-02` - **Branch:** `feature/esc-10-request-acceptance`
+- **Goal:** A consultation is requested by the client and must be accepted by the professional before it is confirmed. This issue builds that handshake: the request endpoint, the professional's accept and decline endpoints, and the job that expires a request the professional never answers -- each refunding the client in full where the consultation does not go ahead.
+- **Requirements:** 11 items - **Validation checks:** 17 items - **Deliverables:** 6 items - full text in [`.github/issue-bodies/esc-10.md`](../../.github/issue-bodies/esc-10.md)
+
+### ESC-11 — Professional request inbox and consultation dashboard
+
+- **Labels:** `frontend` `escrow` `consultation` - **Size:** L - **Depends on:** `ESC-10`, `PRO-03`, `SCH-03` - **Branch:** `feature/esc-11-professional-dashboard`
+- **Goal:** The professional's home in the application: the requests waiting for their answer, the consultations coming up, and the route into each session. Without this a verified professional has nowhere to accept a request from, and the journey cannot be completed.
+- **Requirements:** 11 items - **Validation checks:** 10 items - **Deliverables:** 4 items - full text in [`.github/issue-bodies/esc-11.md`](../../.github/issue-bodies/esc-11.md)
+
+### ESC-12 — Client consultations list and detail
+
+- **Labels:** `frontend` `escrow` - **Size:** M - **Depends on:** `ESC-10`, `ESC-08` - **Branch:** `feature/esc-12-client-consultations`
+- **Goal:** The client's view of their own consultations: what they have requested, what has been accepted, what is coming up, and where their money is. DSP-03 and CON-03 both assume a client consultation detail screen exists; this is the issue that creates it.
+- **Requirements:** 10 items - **Validation checks:** 10 items - **Deliverables:** 4 items - full text in [`.github/issue-bodies/esc-12.md`](../../.github/issue-bodies/esc-12.md)
 
 ## CON — Consultation sessions
 
@@ -299,7 +318,7 @@ Good first issues: `FND-07`, `ESC-05`.
 
 ### CON-03 — Consultation room interface with audio-only fallback
 
-- **Labels:** `frontend` `consultation` - **Size:** L - **Depends on:** `CON-02`, `ESC-08` - **Branch:** `feature/con-03-consultation-room-ui`
+- **Labels:** `frontend` `consultation` - **Size:** L - **Depends on:** `CON-02`, `ESC-12` - **Branch:** `feature/con-03-consultation-room-ui`
 - **Goal:** The screen where the consultation actually happens. Video quality on Tunisian networks is called out in the feasibility study as a key acceptance criterion, so graceful degradation is a requirement here rather than a refinement.
 - **Requirements:** 9 items - **Validation checks:** 11 items - **Deliverables:** 4 items - full text in [`.github/issue-bodies/con-03.md`](../../.github/issue-bodies/con-03.md)
 
@@ -327,7 +346,7 @@ Good first issues: `FND-07`, `ESC-05`.
 
 ### DSP-03 — Dispute screens for the client and the back-office
 
-- **Labels:** `frontend` `admin` - **Size:** M - **Depends on:** `DSP-02`, `CON-03` - **Branch:** `feature/dsp-03-dispute-ui`
+- **Labels:** `frontend` `admin` - **Size:** M - **Depends on:** `DSP-02`, `CON-03`, `ESC-12` - **Branch:** `feature/dsp-03-dispute-ui`
 - **Goal:** The client's route to raising a dispute in the hour after a consultation, and the admin's screen for resolving it. The client-side flow has a hard deadline, so the remaining time has to be visible and honest.
 - **Requirements:** 7 items - **Validation checks:** 9 items - **Deliverables:** 4 items - full text in [`.github/issue-bodies/dsp-03.md`](../../.github/issue-bodies/dsp-03.md)
 
@@ -349,9 +368,9 @@ Good first issues: `FND-07`, `ESC-05`.
 
 ### NOT-02 — Lifecycle notifications for the whole consultation journey
 
-- **Labels:** `backend` - **Size:** M - **Depends on:** `NOT-01`, `CON-02`, `DSP-02` - **Branch:** `feature/not-02-lifecycle-notifications`
+- **Labels:** `backend` - **Size:** M - **Depends on:** `NOT-01`, `CON-02`, `DSP-02`, `ESC-10` - **Branch:** `feature/not-02-lifecycle-notifications`
 - **Goal:** Trigger the right message at each point in a consultation's life, to the right party, on the right channel. Reminders in particular are the cheapest available remedy for the no-show rate the feasibility study names as a KPI to watch.
-- **Requirements:** 8 items - **Validation checks:** 9 items - **Deliverables:** 5 items - full text in [`.github/issue-bodies/not-02.md`](../../.github/issue-bodies/not-02.md)
+- **Requirements:** 10 items - **Validation checks:** 11 items - **Deliverables:** 5 items - full text in [`.github/issue-bodies/not-02.md`](../../.github/issue-bodies/not-02.md)
 
 ## CMP — Compliance and hardening
 
@@ -374,6 +393,22 @@ Good first issues: `FND-07`, `ESC-05`.
 - **Labels:** `api` `docs` `test` - **Size:** M - **Depends on:** `ESC-03`, `CON-02`, `DSP-02` - **Branch:** `feature/cmp-03-api-contract`
 - **Goal:** Make the HTTP contract explicit and tested, so the web app can be developed against a stable surface and a breaking change is caught in CI rather than in the browser. It is also what a future integration partner will read.
 - **Requirements:** 7 items - **Validation checks:** 7 items - **Deliverables:** 5 items - full text in [`.github/issue-bodies/cmp-03.md`](../../.github/issue-bodies/cmp-03.md)
+
+## E2E — End-to-end acceptance
+
+*Milestone: MVP.* A reproducible demo environment and a browser-driven acceptance suite that drives the whole MVP journey -- register, verify, search, request, accept, consult, release -- for each of the three verticals. This is what makes the MVP exit condition a mechanical question rather than an opinion.
+
+### E2E-01 — Demo seeding for a reproducible MVP walkthrough
+
+- **Labels:** `backend` `test` `infra` - **Size:** M - **Depends on:** `KYC-06`, `PRO-01`, `SCH-01` - **Branch:** `feature/e2e-01-demo-seeding`
+- **Goal:** One command that produces a database you can demonstrate the MVP from: verified professionals in all three verticals with availability and rates, client accounts, and consultations sitting in each interesting state. Without it, every walkthrough and every manual test starts with twenty minutes of clicking.
+- **Requirements:** 9 items - **Validation checks:** 9 items - **Deliverables:** 4 items - full text in [`.github/issue-bodies/e2e-01.md`](../../.github/issue-bodies/e2e-01.md)
+
+### E2E-02 — End-to-end acceptance suite for the MVP journey
+
+- **Labels:** `test` `ci` - **Size:** L - **Depends on:** `ESC-11`, `ESC-12`, `CON-03`, `DSP-03`, `E2E-01` - **Branch:** `feature/e2e-02-acceptance-suite`
+- **Goal:** Automate the walkthrough that defines the MVP as done: register, get verified, search, request, accept, consult, and watch the money release. Every issue so far tests its own layer; nothing yet drives a real browser through the whole journey, and that journey is the acceptance criterion.
+- **Requirements:** 11 items - **Validation checks:** 11 items - **Deliverables:** 5 items - full text in [`.github/issue-bodies/e2e-02.md`](../../.github/issue-bodies/e2e-02.md)
 
 ## BETA — Beta
 
@@ -433,9 +468,9 @@ Good first issues: `FND-07`, `ESC-05`.
 - **Goal:** Add Arabic as a second locale, which the feasibility study lists as optional for later but which materially widens reach. It is a large change because Arabic is right-to-left, not because the strings are many.
 - **Requirements:** 5 items - **Validation checks:** 6 items - **Deliverables:** 4 items - full text in [`.github/issue-bodies/beta-09.md`](../../.github/issue-bodies/beta-09.md)
 
-### BETA-10 — Pilot readiness: seeding, support tooling and the KPI dashboard
+### BETA-10 — Pilot readiness: support tooling and the KPI dashboard
 
-- **Labels:** `admin` `docs` `backend` - **Size:** M - **Depends on:** `BETA-06`, `BETA-07` - **Branch:** `feature/beta-10-pilot-readiness`
+- **Labels:** `admin` `docs` `backend` - **Size:** M - **Depends on:** `BETA-06`, `BETA-07`, `E2E-01` - **Branch:** `feature/beta-10-pilot-readiness`
 - **Goal:** Everything needed to run the supply-first pilot the feasibility study recommends: onboard a curated set of professionals in one city, support them, and measure whether it is working against the KPIs the study names.
 - **Requirements:** 6 items - **Validation checks:** 6 items - **Deliverables:** 4 items - full text in [`.github/issue-bodies/beta-10.md`](../../.github/issue-bodies/beta-10.md)
 

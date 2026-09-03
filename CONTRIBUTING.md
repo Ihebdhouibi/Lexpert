@@ -56,7 +56,9 @@ documents, or any real consultation content, even as test fixtures. Use syntheti
 
 ## Local setup
 
-Requires Python 3.12 and Node 20 (or newer LTS), plus PostgreSQL 16 (Docker is fine).
+Requires Python 3.11 (see `.python-version`) and Node 20 (see `.nvmrc`), plus PostgreSQL 16
+(Docker is fine). The Python version is pinned deliberately: 3.11 is what the rest of the
+team's stack runs, and CI runs the same version, so a local pass means a CI pass.
 
 ```bash
 # Backend

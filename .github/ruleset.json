@@ -20,8 +20,12 @@
     }
   ],
   "rules": [
-    { "type": "deletion" },
-    { "type": "non_fast_forward" },
+    {
+      "type": "deletion"
+    },
+    {
+      "type": "non_fast_forward"
+    },
     {
       "type": "pull_request",
       "parameters": {
@@ -31,7 +35,9 @@
         "require_last_push_approval": false,
         "required_review_thread_resolution": true,
         "required_reviewers": [],
-        "allowed_merge_methods": ["squash"]
+        "allowed_merge_methods": [
+          "squash"
+        ]
       }
     },
     {
@@ -40,10 +46,24 @@
         "strict_required_status_checks_policy": true,
         "do_not_enforce_on_create": false,
         "required_status_checks": [
-          { "context": "lint-api" },
-          { "context": "test-api" },
-          { "context": "lint-web" },
-          { "context": "test-web" }
+          {
+            "context": "lint-api"
+          },
+          {
+            "context": "test-api"
+          },
+          {
+            "context": "lint-web"
+          },
+          {
+            "context": "test-web"
+          },
+          {
+            "context": "secrets"
+          },
+          {
+            "context": "repo-checks"
+          }
         ]
       }
     }

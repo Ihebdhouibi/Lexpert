@@ -29,7 +29,7 @@ financial experts). No professional is bookable before a human admin approves th
 | Part | Choice |
 | --- | --- |
 | Web | React + TypeScript, Vite (`apps/web`) |
-| API | Python 3.12 + FastAPI, modular monolith (`apps/api`, package `lexpert_api`) |
+| API | Python 3.11 + FastAPI, modular monolith (`apps/api`, package `lexpert_api`) |
 | Database | PostgreSQL 16 |
 | Video | Hosted WebRTC SDK behind a provider adapter |
 
@@ -46,10 +46,14 @@ financial experts). No professional is bookable before a human admin approves th
 
 ## Milestones
 
-- **MVP** -- simulated escrow end to end, all three verticals with KYC-Pro, video consultations.
-- **Beta** -- licensed payment partner behind the escrow interface, INPDP audit, deploy pipeline.
+- **MVP** -- the whole journey working end to end: a client registers and searches, requests a
+  consultation from a verified professional, the professional accepts, they consult over video,
+  and the simulated escrow releases the funds an hour later. All three verticals, with KYC-Pro.
+  Proven by a browser-driven acceptance suite, not by hand.
+- **Beta** -- licensed payment partner behind the escrow interface, local payment methods,
+  diaspora flows, INPDP audit, observability and a deploy pipeline.
 
 ## Getting started
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). In short: Python 3.12, Node 20, PostgreSQL 16, then
+See [CONTRIBUTING.md](CONTRIBUTING.md). In short: Python 3.11, Node 20, PostgreSQL 16, then
 `pre-commit install && pre-commit install --hook-type commit-msg` once per clone.

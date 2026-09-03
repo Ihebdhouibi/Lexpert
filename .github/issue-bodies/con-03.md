@@ -1,7 +1,7 @@
 **Task id:** `CON-03`
 **Milestone:** MVP
 **Size:** L (3 days or more)
-**Depends on:** `CON-02`, `ESC-08`
+**Depends on:** `CON-02`, `ESC-12`
 **Branch:** `feature/con-03-consultation-room-ui`
 **Labels:** `frontend`, `consultation`
 

@@ -12,24 +12,36 @@ The heart of the product: creating a consultation, holding the funds, and moving
 ## Requirements
 
 1. `Consultation`: id, client id, professional id, scheduled start and end (UTC), duration, timezone captured at booking, status, amounts (professional amount, commission, total), provider hold reference, hold-window expiry, timestamps.
-2. Implement exactly the transitions from feasibility study section 5.1 and nothing more: `BOOKED -> FUNDS_HELD`, `BOOKED -> CANCELLED`, `FUNDS_HELD -> IN_SESSION`, `FUNDS_HELD -> CANCELLED`, `FUNDS_HELD -> REFUNDED`, `IN_SESSION -> SESSION_ENDED`, `SESSION_ENDED -> HOLD_WINDOW`, `HOLD_WINDOW -> RELEASED_TO_PRO`, `HOLD_WINDOW -> UNDER_REVIEW`, `UNDER_REVIEW -> RELEASED_TO_PRO`, `UNDER_REVIEW -> REFUNDED`. Every other transition raises.
-3. `RELEASED_TO_PRO`, `REFUNDED` and `CANCELLED` are terminal. No transition leaves a terminal state, ever.
-4. One `transition(consultation, to_status, actor, reason)` function is the only way status changes. It locks the row (`SELECT FOR UPDATE`), validates the transition, performs the provider call and the ledger posting, appends the audit entry, and commits — all in one database transaction.
-5. **Slot concurrency is resolved here.** A database-level exclusion or unique constraint prevents two non-terminal consultations overlapping for the same professional. Two simultaneous bookings for one slot must yield one success and one conflict error, never two bookings.
-6. Booking flow: validate the slot against SCH-02, compute amounts via ESC-05, create the consultation as `BOOKED`, call `authorize_hold` with an idempotency key derived from the consultation id, post the hold to the ledger, and transition to `FUNDS_HELD`. If the provider declines, the consultation ends `CANCELLED` with the reason and no ledger movement.
-7. Ledger postings per transition, exactly as documented in `ledger.md`: the hold moves value from the client account to the consultation's escrow-hold account; release splits it between professional payable and platform revenue; a refund reverses the hold.
-8. The provider call and the ledger post must not be able to disagree. Where the provider succeeds and the local transaction then fails, the idempotency key makes the retry safe; document this recovery path explicitly.
-9. Endpoints: `POST /api/v1/consultations` (client books), `GET /api/v1/consultations` (the caller's own, filtered by status), `GET /api/v1/consultations/{id}` (client, professional or admin only).
+2. Implement exactly these transitions and nothing more. They are the feasibility study's section 5.1 machine plus the request-and-accept handshake the MVP requires, which the study does not model:
+    - `BOOKED -> PENDING_ACCEPTANCE` (the client's hold is authorized)
+    - `BOOKED -> CANCELLED` (the hold was declined by the provider)
+    - `PENDING_ACCEPTANCE -> FUNDS_HELD` (the professional accepted)
+    - `PENDING_ACCEPTANCE -> DECLINED` (the professional refused)
+    - `PENDING_ACCEPTANCE -> EXPIRED` (no answer before the deadline)
+    - `PENDING_ACCEPTANCE -> CANCELLED` (the client withdrew)
+    - `FUNDS_HELD -> IN_SESSION`, `FUNDS_HELD -> CANCELLED`, `FUNDS_HELD -> REFUNDED`
+    - `IN_SESSION -> SESSION_ENDED`, `SESSION_ENDED -> HOLD_WINDOW`
+    - `HOLD_WINDOW -> RELEASED_TO_PRO`, `HOLD_WINDOW -> UNDER_REVIEW`
+    - `UNDER_REVIEW -> RELEASED_TO_PRO`, `UNDER_REVIEW -> REFUNDED`
+  Every other transition raises. This issue owns the whole machine; ESC-10 builds the endpoints and the expiry job that drive the handshake states, so keep the matrix here and do not duplicate it there.
+3. `DECLINED` and `EXPIRED` are terminal, and both require the client to have been refunded in full. A consultation cannot reach either state with funds still held.
+4. `RELEASED_TO_PRO`, `REFUNDED`, `CANCELLED`, `DECLINED` and `EXPIRED` are terminal. No transition leaves a terminal state, ever.
+5. One `transition(consultation, to_status, actor, reason)` function is the only way status changes. It locks the row (`SELECT FOR UPDATE`), validates the transition, performs the provider call and the ledger posting, appends the audit entry, and commits — all in one database transaction.
+6. **Slot concurrency is resolved here.** A database-level exclusion or unique constraint prevents two non-terminal consultations overlapping for the same professional. `PENDING_ACCEPTANCE` counts as non-terminal, so an unanswered request holds its slot. Two simultaneous requests for one slot must yield one success and one conflict error, never two.
+7. Request flow: validate the slot against SCH-02, compute amounts via ESC-05, create the consultation as `BOOKED`, call `authorize_hold` with an idempotency key derived from the consultation id, post the hold to the ledger, and transition to `PENDING_ACCEPTANCE` -- awaiting the professional's answer. If the provider declines, the consultation ends `CANCELLED` with the reason and no ledger movement. The accept, decline and expiry paths are ESC-10.
+8. Ledger postings per transition, exactly as documented in `ledger.md`: the hold moves value from the client account to the consultation's escrow-hold account; release splits it between professional payable and platform revenue; a refund reverses the hold.
+9. The provider call and the ledger post must not be able to disagree. Where the provider succeeds and the local transaction then fails, the idempotency key makes the retry safe; document this recovery path explicitly.
+10. Endpoints: `POST /api/v1/consultations` (client requests), `GET /api/v1/consultations` (the caller's own, filtered by status), `GET /api/v1/consultations/{id}` (client, professional or admin only).
 
 ## Validation / test checks
 
 Every item below must be satisfied, and the pull request must say how.
 
 - Unit test: a table-driven test over the full transition matrix asserts every legal transition is allowed and **every** illegal one raises. This includes every transition out of each terminal state.
-- Integration test: a successful booking ends `FUNDS_HELD`, with a provider hold, a balanced ledger transaction, and an audit entry.
+- Integration test: a successful request ends `PENDING_ACCEPTANCE`, with a provider hold, a balanced ledger transaction, and an audit entry.
 - Integration test: a provider decline leaves the consultation `CANCELLED` and the ledger **empty** for it.
 - Integration test: a provider timeout leaves no partially-booked state; retrying with the same key does not double-hold.
-- Concurrency test: two parallel bookings of the identical slot produce exactly one `FUNDS_HELD` consultation and one conflict error. Run it enough times to be meaningful.
+- Concurrency test: two parallel requests for the identical slot produce exactly one `PENDING_ACCEPTANCE` consultation and one conflict error. Run it enough times to be meaningful.
 - Concurrency test: two parallel transitions of the same consultation produce one success and one rejection, not two.
 - Integration test: booking a slot outside availability is refused.
 - Integration test: booking inside the minimum-notice window is refused.

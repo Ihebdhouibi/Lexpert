@@ -158,7 +158,7 @@ ISSUES: list[dict[str, object]] = [
         "milestone": "MVP",
         "labels": ["frontend", "consultation"],
         "size": "L",
-        "depends": ["CON-02", "ESC-08"],
+        "depends": ["CON-02", "ESC-12"],
         "branch": "feature/con-03-consultation-room-ui",
         "goal": (
             "The screen where the consultation actually happens. Video quality on Tunisian "
@@ -404,7 +404,7 @@ ISSUES: list[dict[str, object]] = [
         "milestone": "MVP",
         "labels": ["frontend", "admin"],
         "size": "M",
-        "depends": ["DSP-02", "CON-03"],
+        "depends": ["DSP-02", "CON-03", "ESC-12"],
         "branch": "feature/dsp-03-dispute-ui",
         "goal": (
             "The client's route to raising a dispute in the hour after a consultation, and the "
@@ -593,7 +593,7 @@ ISSUES: list[dict[str, object]] = [
         "milestone": "MVP",
         "labels": ["backend"],
         "size": "M",
-        "depends": ["NOT-01", "CON-02", "DSP-02"],
+        "depends": ["NOT-01", "CON-02", "DSP-02", "ESC-10"],
         "branch": "feature/not-02-lifecycle-notifications",
         "goal": (
             "Trigger the right message at each point in a consultation's life, to the right "
@@ -602,16 +602,26 @@ ISSUES: list[dict[str, object]] = [
         ),
         "requirements": [
             "Notifications on: verification approved, rejected or more-info-requested (to the "
-            "professional); booking confirmed (to both, with the joining details); a reminder 24 "
-            "hours before and another 30 minutes before (to both, from settings); consultation "
-            "starting now; funds released (to the professional); refund issued (to the client); "
-            "dispute raised (to the professional and the admin queue); dispute resolved (to "
-            "both); cancellation (to the counterparty).",
+            "professional); **consultation requested** (to the professional, stating the "
+            "acceptance deadline); **request accepted** (to the client, with the joining "
+            "details); **request declined** and **request expired** (to the client, both "
+            "stating the full refund); **request withdrawn** (to the professional); a reminder "
+            "24 hours before and another 30 minutes before (to both, from settings); "
+            "consultation starting now; funds released (to the professional); refund issued "
+            "(to the client); dispute raised (to the professional and the admin queue); "
+            "dispute resolved (to both); cancellation (to the counterparty).",
+            "The new-request notification to the professional is the one that gates the whole "
+            "journey: an unnoticed request expires and the client is refunded for a "
+            "consultation that could have happened. Send it on both channels and treat SMS as "
+            "the primary one.",
             "Reminders are scheduled, deduplicated and idempotent: a reminder is sent exactly "
             "once per consultation per reminder type, even if the scheduler runs twice or is "
             "restarted.",
-            "A cancelled or refunded consultation stops its pending reminders. A reminder for a "
-            "consultation that no longer exists in a joinable state must not be sent.",
+            "A `PENDING_ACCEPTANCE` consultation gets **no** consultation reminders -- it is "
+            "not confirmed. Reminders begin only once the professional has accepted.",
+            "A cancelled, declined, expired or refunded consultation stops its pending reminders. "
+            "A reminder for a consultation that no longer exists in a joinable state must not "
+            "be sent.",
             "Reminders carry the recipient's local time, not UTC and not the professional's zone "
             "for the client. A diaspora client must read the time they will actually join at.",
             "Channel choice per notification type: time-critical ones (reminders, starting now) "
@@ -629,7 +639,13 @@ ISSUES: list[dict[str, object]] = [
             "Integration test per notification type: the triggering action results in exactly one "
             "send to the correct party on the correct channel, using the recording fake.",
             "Integration test: running the reminder scheduler twice sends each reminder once.",
-            "Integration test: cancelling a consultation prevents its pending reminders.",
+            "Integration test: cancelling a consultation prevents its pending reminders, and so "
+            "does a decline and an expiry.",
+            "Integration test: a `PENDING_ACCEPTANCE` consultation receives no reminders; "
+            "after acceptance it does.",
+            "Integration test: each of request-received, accepted, declined, expired and "
+            "withdrawn sends exactly one notification to the correct party, and the "
+            "request-received one goes out on SMS.",
             "Integration test with a frozen clock: the 24-hour and 30-minute reminders fire at "
             "the right times and not before.",
             "Integration test: a reminder to a client in `Europe/Paris` renders the time in that "
@@ -1268,11 +1284,11 @@ ISSUES: list[dict[str, object]] = [
     },
     {
         "id": "BETA-10",
-        "title": "Pilot readiness: seeding, support tooling and the KPI dashboard",
+        "title": "Pilot readiness: support tooling and the KPI dashboard",
         "milestone": "Beta",
         "labels": ["admin", "docs", "backend"],
         "size": "M",
-        "depends": ["BETA-06", "BETA-07"],
+        "depends": ["BETA-06", "BETA-07", "E2E-01"],
         "branch": "feature/beta-10-pilot-readiness",
         "goal": (
             "Everything needed to run the supply-first pilot the feasibility study recommends: "
@@ -1292,7 +1308,8 @@ ISSUES: list[dict[str, object]] = [
             "movement.",
             "Impersonation, if it is built at all, is read-only, time-boxed, consented to by the "
             "user, and loudly audited. If that is not achievable, do not build it.",
-            "Seed data for a demo environment, entirely synthetic.",
+            "Extend the E2E-01 demo seeding to cover the pilot scenarios, rather than building a "
+            "second seeder. Still entirely synthetic.",
             "An operational runbook for the pilot: what to watch daily, what to do when a dispute "
             "arrives, and how to handle a professional's payout question.",
         ],
@@ -1302,14 +1319,14 @@ ISSUES: list[dict[str, object]] = [
             "Test: assisted onboarding never exposes or sets a professional's credentials.",
             "Test: impersonation, if present, is read-only and expires, and a write attempt "
             "during it is refused.",
-            "Test: the seeding command produces a working demo environment and contains no real "
-            "personal data.",
+            "Test: the extended seeding produces a working pilot environment and still contains no "
+            "real personal data.",
             "The runbook walked through once with the owner, and corrected from that walkthrough.",
         ],
         "deliverables": [
             "The admin onboarding assistance and support tooling.",
             "The KPI dashboard and its endpoints.",
-            "The synthetic seeding command.",
+            "The pilot scenarios added to the E2E-01 seeding command.",
             "`docs/runbooks/pilot_operations.md`.",
         ],
     },

@@ -1,51 +1,168 @@
 # Pre-commit hooks for Lexpert.
-# Install once:  pre-commit install && pre-commit install --hook-type commit-msg
-# Run manually:  pre-commit run --all-files
+#
+# Install once per clone:
+#   pip install pre-commit
+#   pre-commit install && pre-commit install --hook-type commit-msg
+#
+# Run over everything:
+#   pre-commit run --all-files
+#
+# Update pinned hook versions (deliberately, in a chore: PR):
+#   pre-commit autoupdate
+#
+# Three notes on how this file is put together:
+#
+#   * `default_install_hook_types` matters. Without it, `pre-commit install` wires only the
+#     pre-commit stage and the commit-message checks never run.
+#   * The `files:` filters keep the Python hooks off the React app and vice versa.
+#   * The web and mypy hooks go through wrappers in `scripts/hooks/` that skip cleanly while
+#     `apps/` does not exist yet. A hook that always fails gets bypassed with --no-verify,
+#     and that becomes the habit; a hook that skips with a reason does not.
 minimum_pre_commit_version: "3.5.0"
 default_install_hook_types: [pre-commit, commit-msg]
+default_stages: [pre-commit]
 
 repos:
+  # ----------------------------------------------------------------- file hygiene
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
+      # Protects the branch model locally: the ruleset stops a push to a protected branch,
+      # but only after you have already made the commit on it. This stops it earlier.
+      - id: no-commit-to-branch
+        args: [--branch, main, --branch, stable-testing, --branch, develop]
+
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]  # preserve markdown hard line breaks
       - id: end-of-file-fixer
-      - id: check-yaml
-      - id: check-json
-      - id: check-added-large-files
-        args: [--maxkb=1024]
-      - id: check-merge-conflict
       - id: mixed-line-ending
         args: [--fix=lf]
-      - id: detect-private-key          # public repo: cheap insurance
 
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=1024]
+      - id: check-case-conflict          # the owner is on Windows, CI is on Linux
+      - id: check-symlinks
+      - id: destroyed-symlinks
+      - id: forbid-new-submodules
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+
+      # Public repository: cheap insurance, and it catches the mistake that cannot be undone.
+      - id: detect-private-key
+
+      # Python correctness traps that linting alone does not always catch.
+      - id: debug-statements
+        files: ^apps/api/
+      - id: check-ast
+        files: ^apps/api/
+      - id: name-tests-test
+        args: [--pytest-test-first]
+        files: ^apps/api/tests/
+
+  # Secret scanning is deliberately split. The fast, dependency-free checks run here (see
+  # `detect-private-key` above and the provider-token patterns in the lexpert-staged-content
+  # hook below). The heavy entropy scanner, gitleaks, runs as the `secrets` CI job instead:
+  # it is distributed as a Go binary, and on a machine without a Go toolchain pre-commit
+  # bootstraps one, which takes long enough that the hook gets bypassed. Fast local loop,
+  # thorough gate before merge.
+
+  # ----------------------------------------------------------------- Python: apps/api
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.16.1
     hooks:
-      - id: ruff
+      - id: ruff-check
         args: [--fix]
         files: ^apps/api/
       - id: ruff-format
         files: ^apps/api/
 
+  # ----------------------------------------------------------------- project rules
   - repo: local
     hooks:
-      - id: eslint
-        name: eslint
-        entry: npm --prefix apps/web run lint --
+      # CLAUDE.md rules 1 and 2, public-repo hygiene, and the money and time conventions
+      # from the implementation plan. See the script for what each check enforces and why.
+      - id: lexpert-staged-content
+        name: lexpert repository rules (attribution, emojis, secrets, conventions)
+        entry: python scripts/hooks/check_staged_content.py
         language: system
+        types_or: [text]
+
+      # Keeps the ruleset's required status checks and the CI job names in sync. Drift here
+      # blocks every pull request forever on a check that never reports.
+      - id: lexpert-ruleset-contexts
+        name: ruleset required checks match CI job names
+        entry: python scripts/check_ruleset_contexts.py
+        language: system
+        files: ^\.github/(ruleset\.json|workflows(-staged)?/ci\.yml)$
+        pass_filenames: false
+
+      # The hooks below enforce the project's rules, so they get their own tests. A check
+      # that silently stops rejecting bad input looks identical to one that is working.
+      - id: lexpert-hook-tests
+        name: pre-commit hook self-tests
+        entry: python scripts/hooks/test_hooks.py
+        language: system
+        files: ^scripts/hooks/
+        pass_filenames: false
+
+      # The backlog is generated. An edited generated file is silently overwritten on the
+      # next run, so catch it at commit time instead.
+      - id: lexpert-backlog-generated
+        name: backlog artifacts match their source data
+        entry: python scripts/hooks/check_backlog_current.py
+        language: system
+        files: ^(scripts/backlog/|docs/implementation/lexpert_issues\.md|\.github/issue-bodies/|scripts/create_issues\.sh)
+        pass_filenames: false
+
+      # ----------------------------------------------------------- apps/api
+      - id: mypy-api
+        name: mypy (apps/api, strict)
+        entry: scripts/hooks/run_api_mypy.sh
+        language: script
+        files: ^apps/api/.*\.py$
+        pass_filenames: false
+
+      # ----------------------------------------------------------- apps/web
+      - id: eslint-web
+        name: eslint (apps/web)
+        entry: scripts/hooks/run_web_check.sh lint
+        language: script
         files: ^apps/web/.*\.(ts|tsx|js|jsx)$
         pass_filenames: false
-      - id: prettier
-        name: prettier
-        entry: npx --prefix apps/web prettier --write
-        language: system
-        files: ^apps/web/.*\.(ts|tsx|js|jsx|css|json|md)$
 
+      - id: prettier-web
+        name: prettier (apps/web)
+        entry: scripts/hooks/run_web_check.sh format:fix
+        language: script
+        files: ^apps/web/.*\.(ts|tsx|js|jsx|css|scss|json|md|html)$
+        pass_filenames: false
+
+      - id: typecheck-web
+        name: tsc --noEmit (apps/web)
+        entry: scripts/hooks/run_web_check.sh typecheck
+        language: script
+        files: ^apps/web/.*\.(ts|tsx)$
+        pass_filenames: false
+
+  # ----------------------------------------------------------------- commit messages
   - repo: https://github.com/compilerla/conventional-pre-commit
     rev: v4.4.0
     hooks:
+      # The args ARE the allowed commit types. They must match CLAUDE.md rule 4 and
+      # CONTRIBUTING.md. Change one, change all three.
       - id: conventional-pre-commit
         stages: [commit-msg]
         args: [feat, chore, docs, tests, bug, ci]
+
+  - repo: local
+    hooks:
+      # No AI attribution, no emojis, sane subject line. CLAUDE.md rules 1 and 2.
+      - id: lexpert-commit-message
+        name: lexpert commit message rules
+        entry: python scripts/hooks/check_commit_message.py
+        language: system
+        stages: [commit-msg]

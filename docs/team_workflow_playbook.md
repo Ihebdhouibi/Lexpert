@@ -345,7 +345,7 @@ This is a public repository: never commit secrets, credentials, or client data.
 
 ## Local setup
 
-Requires Python 3.12 and Node 20 (or newer LTS).
+Requires Python 3.11 and Node 20 (or newer LTS).
 
 ```bash
 # Backend
@@ -440,14 +440,14 @@ dev = [
 
 [tool.ruff]
 line-length = 100
-target-version = "py312"
+target-version = "py311"
 src = ["src", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.11"
 strict = true
 files = ["src", "tests"]
 
@@ -604,7 +604,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.11"
           cache: pip
           cache-dependency-path: apps/api/pyproject.toml
       - name: Install
@@ -625,7 +625,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.11"
           cache: pip
           cache-dependency-path: apps/api/pyproject.toml
       - name: Install

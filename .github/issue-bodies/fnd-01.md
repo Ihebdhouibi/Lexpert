@@ -15,9 +15,10 @@ Create the two-app monorepo layout every later issue assumes, so that both apps 
 2. Configure ESLint on the flat-config format (`eslint.config.js`) with `typescript-eslint` and `eslint-plugin-react-hooks`. Prettier is the only formatter; ESLint handles correctness rules only, so the two never disagree.
 3. Commit `apps/web/package-lock.json` so CI's `npm ci` is reproducible. Node version is pinned in the repository-root `.nvmrc` (already committed, value `20`).
 4. Create `apps/api` as an installable Python package: `pyproject.toml` with the package under `apps/api/src/lexpert_api/`, plus an `apps/api/tests/` root.
-5. Configure `apps/api/pyproject.toml` exactly as specified in the Deliverables section below: ruff, mypy strict, pytest and coverage with `fail_under = 70`.
-6. Add one trivial passing test per app so the suites are not empty (`vitest` on a smoke assertion, `pytest` on a package-import assertion).
-7. Run `pre-commit install && pre-commit install --hook-type commit-msg`, then `pre-commit run --all-files`. If that reformats files, commit the reformat as its own `chore: apply pre-commit formatting` commit so the noise stays out of the feature diff.
+5. **Python 3.11**, pinned deliberately -- it is what the rest of the team's stack runs. Set `requires-python = ">=3.11,<3.12"` so an install on the wrong interpreter fails immediately rather than at some later import, and commit a `.python-version` of `3.11` for pyenv. CI runs 3.11 too, so a local pass means a CI pass.
+6. Configure `apps/api/pyproject.toml` exactly as specified in the Deliverables section below: ruff, mypy strict, pytest and coverage with `fail_under = 70`.
+7. Add one trivial passing test per app so the suites are not empty (`vitest` on a smoke assertion, `pytest` on a package-import assertion).
+8. Run `pre-commit install && pre-commit install --hook-type commit-msg`, then `pre-commit run --all-files`. If that reformats files, commit the reformat as its own `chore: apply pre-commit formatting` commit so the noise stays out of the feature diff.
 
 ## Validation / test checks
 
@@ -26,6 +27,7 @@ Every item below must be satisfied, and the pull request must say how.
 - From a clean clone: `cd apps/web && npm ci && npm run build` succeeds.
 - `npm run lint`, `npm run format:check`, `npm run typecheck` and `npm test` all succeed in `apps/web`.
 - From a clean clone: `cd apps/api && pip install -e ".[dev]"` succeeds, then `ruff check .`, `ruff format --check .`, `mypy src` and `pytest` all succeed.
+- `python --version` reports 3.11.x, and installing under 3.12 or 3.10 is refused by `requires-python`.
 - `pre-commit run --all-files` passes at the repository root.
 - `git commit -m "bad message"` is rejected by the commit-msg hook; `git commit -m "chore: verify hook"` is accepted.
 
@@ -33,6 +35,7 @@ Every item below must be satisfied, and the pull request must say how.
 
 - `apps/web/` with `package.json`, `package-lock.json`, `eslint.config.js`, `.prettierrc`, `tsconfig.json`, `vite.config.ts`, one smoke test.
 - `apps/api/pyproject.toml`, `apps/api/src/lexpert_api/__init__.py`, `apps/api/tests/test_smoke.py`.
+- `.python-version` at the repository root, containing `3.11`.
 - A short `apps/README.md` stating which app is which and how to run each.
 
 ## Notes
@@ -40,19 +43,22 @@ Every item below must be satisfied, and the pull request must say how.
 The `apps/api/pyproject.toml` configuration is fixed, because CI and the ruleset depend on it:
 
 ```toml
+[project]
+requires-python = ">=3.11,<3.12"
+
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "pytest-cov>=5.0", "ruff>=0.16", "mypy>=1.11", "httpx>=0.27"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py312"
+target-version = "py311"
 src = ["src", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.11"
 strict = true
 files = ["src", "tests"]
 

@@ -12,19 +12,21 @@ Encode the rules from feasibility study section 5.2 for what happens when a cons
 ## Requirements
 
 1. A pure policy function taking who is cancelling, the time until the scheduled start, the consultation state and the amounts, and returning an outcome: refund in full, refund partially with a stated retained amount, or no refund.
-2. Tiered client cancellation: free outside a configurable window (for example more than 24 hours before), a configurable retained percentage inside it, and a different tier very close to the start. All thresholds and percentages come from settings, not from literals in the code.
-3. Professional cancellation always refunds the client in full, at any notice. The study is explicit that the platform protects the client here.
-4. No-show handling: a professional no-show refunds the client in full; a client no-show retains per policy. A no-show is determined from the CON-02 participation record, not asserted by either party.
-5. A grace period after the scheduled start before a no-show can be declared, from settings.
-6. Endpoints: `POST /api/v1/consultations/{id}/cancel` for the client and the professional, which computes the outcome, performs the refund through the provider, posts the ledger entries and transitions to `CANCELLED` or `REFUNDED`.
-7. Retained amounts are split between professional and platform per a documented rule, and the ledger postings for every outcome are documented in `ledger.md` before the code is written.
-8. The policy function is pure and has no database or provider access, so the whole matrix can be tested exhaustively.
+2. A cancellation while the consultation is still `PENDING_ACCEPTANCE` always refunds in full, whoever initiates it: the professional has not committed any time yet, so there is nothing to compensate. ESC-10 owns the endpoints for that state; this issue owns the rule.
+3. Tiered client cancellation: free outside a configurable window (for example more than 24 hours before), a configurable retained percentage inside it, and a different tier very close to the start. All thresholds and percentages come from settings, not from literals in the code.
+4. Professional cancellation always refunds the client in full, at any notice. The study is explicit that the platform protects the client here.
+5. No-show handling: a professional no-show refunds the client in full; a client no-show retains per policy. A no-show is determined from the CON-02 participation record, not asserted by either party.
+6. A grace period after the scheduled start before a no-show can be declared, from settings.
+7. Endpoints: `POST /api/v1/consultations/{id}/cancel` for the client and the professional, which computes the outcome, performs the refund through the provider, posts the ledger entries and transitions to `CANCELLED` or `REFUNDED`.
+8. Retained amounts are split between professional and platform per a documented rule, and the ledger postings for every outcome are documented in `ledger.md` before the code is written.
+9. The policy function is pure and has no database or provider access, so the whole matrix can be tested exhaustively.
 
 ## Validation / test checks
 
 Every item below must be satisfied, and the pull request must say how.
 
-- Unit test: a table-driven matrix over {client, professional} x {well before, inside window, just before, after start} x {BOOKED, FUNDS_HELD} asserting the expected outcome for every cell. Every cell is populated; none is left implicit.
+- Unit test: a table-driven matrix over {client, professional} x {well before, inside window, just before, after start} x {PENDING_ACCEPTANCE, FUNDS_HELD} asserting the expected outcome for every cell. Every cell is populated; none is left implicit.
+- Unit test: every `PENDING_ACCEPTANCE` cell refunds in full, for both initiators and at every notice level.
 - Unit test: each tier boundary is tested on both sides and exactly at the boundary.
 - Unit test: a professional cancellation refunds in full even one minute before the start.
 - Unit test: outcome amounts always sum to the total held, with no millime lost or created.

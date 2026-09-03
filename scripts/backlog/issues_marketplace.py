@@ -329,8 +329,10 @@ ISSUES: list[dict[str, object]] = [
             "buffer applied after each existing consultation and after each generated slot as "
             "appropriate.",
             "A slot is excluded if it overlaps an existing consultation in any non-terminal "
-            "state, if it falls inside the minimum-notice window, if it is beyond the maximum "
-            "horizon, or if it extends past the availability window's end.",
+            "state -- which includes `PENDING_ACCEPTANCE`, so a request awaiting the "
+            "professional's answer holds its slot -- if it falls inside the minimum-notice "
+            "window, if it is beyond the maximum horizon, or if it extends past the "
+            "availability window's end.",
             "`GET /api/v1/professionals/{id}/slots?duration=&from=&to=&tz=` returning slots with "
             "both the UTC instant and a rendering in the requested timezone, so the client never "
             "has to reimplement the conversion.",
@@ -352,8 +354,8 @@ ISSUES: list[dict[str, object]] = [
             "Unit test: minimum notice removes today's imminent slots, with the clock frozen.",
             "Unit test: maximum horizon truncates the range.",
             "Unit test: a full-day exception yields no slots for that date.",
-            "Unit test: a cancelled consultation does **not** block its slot; a `FUNDS_HELD` one "
-            "does.",
+            "Unit test: a `CANCELLED`, `DECLINED` or `EXPIRED` consultation does **not** block "
+            "its slot; a `FUNDS_HELD` or `PENDING_ACCEPTANCE` one does.",
             "Unit test: slots requested in `Europe/Paris` render at the correct local times "
             "across a DST boundary.",
             "Integration test: an over-long range is refused; an unpublished professional returns "
@@ -635,27 +637,42 @@ ISSUES: list[dict[str, object]] = [
             "`Consultation`: id, client id, professional id, scheduled start and end (UTC), "
             "duration, timezone captured at booking, status, amounts (professional amount, "
             "commission, total), provider hold reference, hold-window expiry, timestamps.",
-            "Implement exactly the transitions from feasibility study section 5.1 and nothing "
-            "more: `BOOKED -> FUNDS_HELD`, `BOOKED -> CANCELLED`, `FUNDS_HELD -> IN_SESSION`, "
-            "`FUNDS_HELD -> CANCELLED`, `FUNDS_HELD -> REFUNDED`, `IN_SESSION -> SESSION_ENDED`, "
-            "`SESSION_ENDED -> HOLD_WINDOW`, `HOLD_WINDOW -> RELEASED_TO_PRO`, "
-            "`HOLD_WINDOW -> UNDER_REVIEW`, `UNDER_REVIEW -> RELEASED_TO_PRO`, "
-            "`UNDER_REVIEW -> REFUNDED`. Every other transition raises.",
-            "`RELEASED_TO_PRO`, `REFUNDED` and `CANCELLED` are terminal. No transition leaves a "
-            "terminal state, ever.",
+            "Implement exactly these transitions and nothing more. They are the feasibility "
+            "study's section 5.1 machine plus the request-and-accept handshake the MVP "
+            "requires, which the study does not model:\n"
+            "    - `BOOKED -> PENDING_ACCEPTANCE` (the client's hold is authorized)\n"
+            "    - `BOOKED -> CANCELLED` (the hold was declined by the provider)\n"
+            "    - `PENDING_ACCEPTANCE -> FUNDS_HELD` (the professional accepted)\n"
+            "    - `PENDING_ACCEPTANCE -> DECLINED` (the professional refused)\n"
+            "    - `PENDING_ACCEPTANCE -> EXPIRED` (no answer before the deadline)\n"
+            "    - `PENDING_ACCEPTANCE -> CANCELLED` (the client withdrew)\n"
+            "    - `FUNDS_HELD -> IN_SESSION`, `FUNDS_HELD -> CANCELLED`, "
+            "`FUNDS_HELD -> REFUNDED`\n"
+            "    - `IN_SESSION -> SESSION_ENDED`, `SESSION_ENDED -> HOLD_WINDOW`\n"
+            "    - `HOLD_WINDOW -> RELEASED_TO_PRO`, `HOLD_WINDOW -> UNDER_REVIEW`\n"
+            "    - `UNDER_REVIEW -> RELEASED_TO_PRO`, `UNDER_REVIEW -> REFUNDED`\n"
+            "  Every other transition raises. This issue owns the whole machine; ESC-10 builds "
+            "the endpoints and the expiry job that drive the handshake states, so keep the "
+            "matrix here and do not duplicate it there.",
+            "`DECLINED` and `EXPIRED` are terminal, and both require the client to have been "
+            "refunded in full. A consultation cannot reach either state with funds still held.",
+            "`RELEASED_TO_PRO`, `REFUNDED`, `CANCELLED`, `DECLINED` and `EXPIRED` are terminal. "
+            "No transition leaves a terminal state, ever.",
             "One `transition(consultation, to_status, actor, reason)` function is the only way "
             "status changes. It locks the row (`SELECT FOR UPDATE`), validates the transition, "
             "performs the provider call and the ledger posting, appends the audit entry, and "
             "commits — all in one database transaction.",
             "**Slot concurrency is resolved here.** A database-level exclusion or unique "
             "constraint prevents two non-terminal consultations overlapping for the same "
-            "professional. Two simultaneous bookings for one slot must yield one success and one "
-            "conflict error, never two bookings.",
-            "Booking flow: validate the slot against SCH-02, compute amounts via ESC-05, create "
-            "the consultation as `BOOKED`, call `authorize_hold` with an idempotency key derived "
-            "from the consultation id, post the hold to the ledger, and transition to "
-            "`FUNDS_HELD`. If the provider declines, the consultation ends `CANCELLED` with the "
-            "reason and no ledger movement.",
+            "professional. `PENDING_ACCEPTANCE` counts as non-terminal, so an unanswered "
+            "request holds its slot. Two simultaneous requests for one slot must yield one "
+            "success and one conflict error, never two.",
+            "Request flow: validate the slot against SCH-02, compute amounts via ESC-05, create "
+            "the consultation as `BOOKED`, call `authorize_hold` with an idempotency key "
+            "derived from the consultation id, post the hold to the ledger, and transition "
+            "to `PENDING_ACCEPTANCE` -- awaiting the professional's answer. If the provider "
+            "declines, the consultation ends `CANCELLED` with the reason and no ledger "
+            "movement. The accept, decline and expiry paths are ESC-10.",
             "Ledger postings per transition, exactly as documented in `ledger.md`: the hold moves "
             "value from the client account to the consultation's escrow-hold account; release "
             "splits it between professional payable and platform revenue; a refund reverses the "
@@ -663,7 +680,7 @@ ISSUES: list[dict[str, object]] = [
             "The provider call and the ledger post must not be able to disagree. Where the "
             "provider succeeds and the local transaction then fails, the idempotency key makes "
             "the retry safe; document this recovery path explicitly.",
-            "Endpoints: `POST /api/v1/consultations` (client books), "
+            "Endpoints: `POST /api/v1/consultations` (client requests), "
             "`GET /api/v1/consultations` (the caller's own, filtered by status), "
             "`GET /api/v1/consultations/{id}` (client, professional or admin only).",
         ],
@@ -671,15 +688,15 @@ ISSUES: list[dict[str, object]] = [
             "Unit test: a table-driven test over the full transition matrix asserts every legal "
             "transition is allowed and **every** illegal one raises. This includes every "
             "transition out of each terminal state.",
-            "Integration test: a successful booking ends `FUNDS_HELD`, with a provider hold, a "
-            "balanced ledger transaction, and an audit entry.",
+            "Integration test: a successful request ends `PENDING_ACCEPTANCE`, with a provider "
+            "hold, a balanced ledger transaction, and an audit entry.",
             "Integration test: a provider decline leaves the consultation `CANCELLED` and the "
             "ledger **empty** for it.",
             "Integration test: a provider timeout leaves no partially-booked state; retrying with "
             "the same key does not double-hold.",
-            "Concurrency test: two parallel bookings of the identical slot produce exactly one "
-            "`FUNDS_HELD` consultation and one conflict error. Run it enough times to be "
-            "meaningful.",
+            "Concurrency test: two parallel requests for the identical slot produce exactly one "
+            "`PENDING_ACCEPTANCE` consultation and one conflict error. Run it enough times "
+            "to be meaningful.",
             "Concurrency test: two parallel transitions of the same consultation produce one "
             "success and one rejection, not two.",
             "Integration test: booking a slot outside availability is refused.",
@@ -916,6 +933,10 @@ ISSUES: list[dict[str, object]] = [
             "A pure policy function taking who is cancelling, the time until the scheduled start, "
             "the consultation state and the amounts, and returning an outcome: refund in full, "
             "refund partially with a stated retained amount, or no refund.",
+            "A cancellation while the consultation is still `PENDING_ACCEPTANCE` always "
+            "refunds in full, whoever initiates it: the professional has not committed any "
+            "time yet, so there is nothing to compensate. ESC-10 owns the endpoints for that "
+            "state; this issue owns the rule.",
             "Tiered client cancellation: free outside a configurable window (for example more "
             "than 24 hours before), a configurable retained percentage inside it, and a "
             "different tier very close to the start. All thresholds and percentages come from "
@@ -938,8 +959,11 @@ ISSUES: list[dict[str, object]] = [
         ],
         "validation": [
             "Unit test: a table-driven matrix over {client, professional} x {well before, inside "
-            "window, just before, after start} x {BOOKED, FUNDS_HELD} asserting the expected "
-            "outcome for every cell. Every cell is populated; none is left implicit.",
+            "window, just before, after start} x {PENDING_ACCEPTANCE, FUNDS_HELD} asserting "
+            "the expected outcome for every cell. Every cell is populated; none is left "
+            "implicit.",
+            "Unit test: every `PENDING_ACCEPTANCE` cell refunds in full, for both "
+            "initiators and at every notice level.",
             "Unit test: each tier boundary is tested on both sides and exactly at the boundary.",
             "Unit test: a professional cancellation refunds in full even one minute before the "
             "start.",
@@ -974,16 +998,18 @@ ISSUES: list[dict[str, object]] = [
     },
     {
         "id": "ESC-08",
-        "title": "Client checkout with the simulated payment step",
+        "title": "Client consultation request checkout with the simulated payment step",
         "milestone": "MVP",
         "labels": ["frontend", "escrow"],
         "size": "M",
         "depends": ["ESC-03", "SCH-04"],
         "branch": "feature/esc-08-checkout-ui",
         "goal": (
-            "The screens where a client confirms a booking and the funds are held. In the MVP "
-            "there is no real payment, and this screen carries the responsibility of saying so "
-            "unambiguously while still demonstrating the real flow."
+            "The screens where a client submits a consultation request and the funds are held. "
+            "The professional has not accepted yet, so the copy must not promise a confirmed "
+            "consultation. In the MVP there is also no real payment, and this screen carries "
+            "the responsibility of saying both things unambiguously while still demonstrating "
+            "the real flow."
         ),
         "requirements": [
             "A checkout summary: professional, date and time in the client's timezone, duration, "
@@ -1007,8 +1033,11 @@ ISSUES: list[dict[str, object]] = [
             "Double-submit protection: the confirm button disables on click and the request "
             "carries an idempotency-safe path, so a double click cannot create two "
             "consultations.",
-            "A confirmation screen: what was booked, when, what happens next, and how to join the "
-            "consultation.",
+            "A confirmation screen that is honest about what has happened: the request was sent, "
+            "the money is held, the professional has until a stated deadline to accept, and "
+            "the client is refunded in full if they decline or do not answer. It must not say "
+            "the consultation is confirmed, and it links to the ESC-12 consultations list "
+            "rather than to a join control that does not work yet.",
         ],
         "validation": [
             "Component test: the summary renders the API's breakdown verbatim, and no arithmetic "
@@ -1017,8 +1046,9 @@ ISSUES: list[dict[str, object]] = [
             "Component test: the simulation banner is present and is not visually dismissible "
             "before confirming.",
             "Component test: confirm is disabled until both consents are checked.",
-            "Component test: a successful confirm calls the endpoint once and navigates to the "
-            "confirmation screen.",
+            "Component test: a successful submit calls the endpoint once and navigates to the "
+            "request-sent screen, whose copy states the acceptance deadline and the "
+            "full-refund guarantee and does not claim the consultation is confirmed.",
             "Component test: a double click results in exactly one request.",
             "Component test: a 409 conflict, a provider decline and a network error each render "
             "their own distinct French message.",
